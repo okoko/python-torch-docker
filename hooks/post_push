@@ -1,0 +1,13 @@
+#!/bin/sh
+# See https://docs.docker.com/docker-hub/builds/advanced/
+if [ "$DOCKER_TAG" = latest ]
+then
+    PYTHON="$(docker run --rm $IMAGE_NAME sh -c 'echo $PYTHON_VERSION')"
+    TORCH="$(docker run --rm $IMAGE_NAME sh -c 'echo $TORCH_VERSION')"
+    docker tag $IMAGE_NAME $DOCKER_REPO:$TORCH-$PYTHON
+    docker push $DOCKER_REPO:$TORCH-$PYTHON
+    for TORCH in $(cat oldtorches)
+    do
+        docker push $DOCKER_REPO:$TORCH-$PYTHON
+    done
+fi
