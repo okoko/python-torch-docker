@@ -1,18 +1,20 @@
 ARG PYTHON=3.7.5
 ARG TORCH=1.3.1
+ARG TORCH_REQUIREMENT="torch==${TORCH}"
 ARG NUMPY=1.17.3
 ARG CREATED
 ARG SOURCE_COMMIT
 
 FROM python:${PYTHON}
 
-ARG TORCH
+ARG TORCH_REQUIREMENT
 ARG NUMPY
-RUN pip install --no-cache-dir torch==${TORCH} numpy==${NUMPY}
+RUN pip install --no-cache-dir ${TORCH_REQUIREMENT} numpy==${NUMPY}
 
 COPY README.md LICENSE /
 
 ARG PYTHON
+ARG TORCH
 ARG CREATED
 ARG SOURCE_COMMIT
 # See https://github.com/opencontainers/image-spec/blob/master/annotations.md

@@ -6,8 +6,9 @@ then
     TORCH="$(docker run --rm $IMAGE_NAME sh -c 'echo $TORCH_VERSION')"
     docker tag $IMAGE_NAME $DOCKER_REPO:$TORCH-$PYTHON
     docker push $DOCKER_REPO:$TORCH-$PYTHON
-    for TORCH in $(cat oldtorches)
+    for spec in $(cat oldtorches)
     do
+        TORCH="${spec%%@*}"
         docker push $DOCKER_REPO:$TORCH-$PYTHON
     done
 fi

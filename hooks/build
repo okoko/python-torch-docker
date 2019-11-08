@@ -10,12 +10,16 @@ docker build \
 PYTHON="$(docker run --rm $IMAGE_NAME sh -c 'echo $PYTHON_VERSION')"
 if [ "$DOCKER_TAG" = latest ]
 then
-    for TORCH in $(cat oldtorches)
+    for spec in $(cat oldtorches)
     do
+        TORCH="${spec%%@*}"
+        BUILD_ARG=
+        [ "$TORCH" = "$spec" ] || BUILD_ARG="--build-arg TORCH_REQUIREMENT=${spec#*@}"
         docker build \
             --build-arg CREATED=$CREATED \
             --build-arg SOURCE_COMMIT=$SOURCE_COMMIT \
             --build-arg TORCH=$TORCH \
+            $BUILD_ARG \
             -f $DOCKERFILE_PATH -t $DOCKER_REPO:$TORCH-$PYTHON .
     done
 fi
