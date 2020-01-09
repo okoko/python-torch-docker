@@ -14,6 +14,9 @@ packages. To know the packages already installed, run
 
     docker run --rm python-torch pip freeze
 
+The image has also a version of numpy, but it is expected you only care
+for matching PyTorch version and not worry about upgrading small numpy.
+
 # License
 
 The image build is licensed using BSD-3, but the underlying Debian,
