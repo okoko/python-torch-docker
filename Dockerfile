@@ -13,6 +13,11 @@ RUN pip install --no-cache-dir ${TORCH_REQUIREMENT} numpy==${NUMPY}
 
 COPY README.md LICENSE /
 
+# nvidia-docker plugin uses these environment variables to provide services
+# into the container. See https://github.com/NVIDIA/nvidia-docker/wiki/Usage
+ENV NVIDIA_VISIBLE_DEVICES "all"
+ENV NVIDIA_DRIVER_CAPABILITIES "all"
+
 ARG PYTHON
 ARG TORCH
 ARG CREATED
