@@ -2,24 +2,27 @@
 # See https://docs.docker.com/docker-hub/builds/advanced/
 [ "$SOURCE_COMMIT" ] || SOURCE_COMMIT="$(git rev-parse HEAD)"
 CREATED="$(date --utc +%Y-%m-%dT%H:%M:%SZ)"
+: ${DOCKERFILE_PATH:=Dockerfile}
+: ${DOCKER_REPO:=okoko/python-torch}
+: ${DOCKER_TAG:=latest}
 : ${IMAGE_NAME:=$DOCKER_REPO:$DOCKER_TAG}
-docker build \
-    --build-arg CREATED=$CREATED \
-    --build-arg SOURCE_COMMIT=$SOURCE_COMMIT \
-    -f $DOCKERFILE_PATH -t $IMAGE_NAME .
-PYTHON="$(docker run --rm $IMAGE_NAME sh -c 'echo $PYTHON_VERSION')"
-if [ "$DOCKER_TAG" = latest ]
-then
-    for spec in $(cat oldtorches)
-    do
-        TORCH="${spec%%@*}"
-        BUILD_ARG=
-        [ "$TORCH" = "$spec" ] || BUILD_ARG="--build-arg TORCH_REQUIREMENT=${spec#*@}"
-        docker build \
-            --build-arg CREATED=$CREATED \
-            --build-arg SOURCE_COMMIT=$SOURCE_COMMIT \
-            --build-arg TORCH=$TORCH \
-            $BUILD_ARG \
-            -f $DOCKERFILE_PATH -t $DOCKER_REPO:$TORCH-$PYTHON .
-    done
-fi
+did_latest=
+while read python spec tail
+do
+    TORCH="${spec%%@*}"
+    BUILD_ARG=
+    [ "$TORCH" = "$spec" ] || BUILD_ARG="--build-arg TORCH_REQUIREMENT=${spec#*@}"
+    docker build \
+        --build-arg CREATED=$CREATED \
+        --build-arg SOURCE_COMMIT=$SOURCE_COMMIT \
+        --build-arg PYTHON=$python \
+        --build-arg TORCH=$TORCH \
+        $BUILD_ARG \
+        -f $DOCKERFILE_PATH -t $DOCKER_REPO:$TORCH-$python .
+
+    if [ ! "$did_latest" -a "$DOCKER_TAG" = latest ]
+    then
+        docker tag $DOCKER_REPO:$TORCH-$python $IMAGE_NAME
+        did_latest=1
+    fi
+done < versions

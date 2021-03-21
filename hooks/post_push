@@ -2,13 +2,9 @@
 # See https://docs.docker.com/docker-hub/builds/advanced/
 if [ "$DOCKER_TAG" = latest ]
 then
-    PYTHON="$(docker run --rm $IMAGE_NAME sh -c 'echo $PYTHON_VERSION')"
-    TORCH="$(docker run --rm $IMAGE_NAME sh -c 'echo $TORCH_VERSION')"
-    docker tag $IMAGE_NAME $DOCKER_REPO:$TORCH-$PYTHON
-    docker push $DOCKER_REPO:$TORCH-$PYTHON
-    for spec in $(cat oldtorches)
+    while read python spec tail
     do
         TORCH="${spec%%@*}"
-        docker push $DOCKER_REPO:$TORCH-$PYTHON
-    done
+        docker push $DOCKER_REPO:$TORCH-$python
+    fi < versions
 fi
