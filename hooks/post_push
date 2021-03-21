@@ -6,5 +6,5 @@ then
     do
         TORCH="${spec%%@*}"
         docker push $DOCKER_REPO:$TORCH-$python
-    fi < versions
+    done < versions
 fi
