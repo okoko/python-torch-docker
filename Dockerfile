@@ -18,8 +18,9 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
 
 # nvidia-docker plugin uses these environment variables to provide services
 # into the container. See https://github.com/NVIDIA/nvidia-docker/wiki/Usage
+# https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#driver-capabilities
 ENV NVIDIA_VISIBLE_DEVICES "all"
-ENV NVIDIA_DRIVER_CAPABILITIES "all"
+ENV NVIDIA_DRIVER_CAPABILITIES "compute,utility"
 # libnvidia-ml.so location on k8s that does not run ldconfig
 ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib64
 
