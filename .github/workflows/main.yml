@@ -4,6 +4,10 @@ on:
     branches:
     - master
     - actions-test
+  # We want to monthly update the base image for security
+  # TODO Can we avoid building the same image?
+  schedule:
+    - cron: '42 3 2 * *'
   workflow_dispatch:
 jobs:
   when:
