@@ -30,8 +30,7 @@ jobs:
         - torch: '1.7.1'
           python: '3.9.7'
         - torch: '1.10.0'
-          python: '3.10.0'
-          latest: true
+          python: '3.9.7'
     steps:
     - uses: actions/checkout@v2
     # https://github.com/docker/build-push-action/blob/master/docs/advanced/cache.md#github-cache
