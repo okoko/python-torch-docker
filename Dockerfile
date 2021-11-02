@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1.2
 
 ARG PYTHON=3.9.7
-ARG TORCH=1.9.0
+ARG TORCH=1.10.0
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
-ARG NUMPY=1.21.2
+ARG NUMPY=1.21.3
 ARG CREATED
 ARG SOURCE_COMMIT
 
@@ -24,13 +24,13 @@ ENV NVIDIA_DRIVER_CAPABILITIES "compute,utility"
 # libnvidia-ml.so location on k8s that does not run ldconfig
 ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib64
 
+ARG TORCH
 ENV TORCH_VERSION="${TORCH}"
 ENV NUMPY_VERSION="${NUMPY}"
 # Nvidia GPU device plugin on kubernetes mounts the driver here
 ENV PATH=${PATH}:/usr/local/nvidia/bin
 
 ARG PYTHON
-ARG TORCH
 ARG CREATED
 ARG SOURCE_COMMIT
 # See https://github.com/opencontainers/image-spec/blob/master/annotations.md
