@@ -3,7 +3,6 @@ on:
   push:
     branches:
     - master
-    - actions-test
   # We want to monthly update the base image for security
   # TODO Can we avoid building the same image?
   schedule:
@@ -11,38 +10,43 @@ on:
     - cron: '42 3 2 * *'
   workflow_dispatch:
 jobs:
-  when:
-    # Any better way to get the build timestamp?
-    runs-on: ubuntu-latest
-    outputs:
-      created: ${{ steps.created.outputs.created }}
-    steps:
-    - id: created
-      run: echo "::set-output name=created::$(date --utc +%Y-%m-%dT%H:%M:%SZ)"
   build:
     runs-on: ubuntu-latest
-    needs: when
     strategy:
       matrix:
         include:
         - torch: '1.9.1'
-          python: '3.9.10'
+          python: '3.9.12'
         - torch: '1.9.1'
-          python: '3.9.10-slim'
-        - torch: '1.10.2'
-          python: '3.9.10'
-        - torch: '1.10.2'
-          python: '3.9.10-slim'
+          python: '3.9.12-slim'
+        - torch: '1.11.0'
+          python: '3.9.12'
+        - torch: '1.11.0'
+          python: '3.9.12-slim'
     steps:
-    - uses: actions/checkout@v2
+    - id: created
+      run: echo "::set-output name=created::$(date --utc +%Y-%m-%dT%H:%M:%SZ)"
+
+    - uses: actions/checkout@v3
+
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-    - uses: docker/login-action@v1
+      uses: docker/setup-buildx-action@94ab11c41e45d028884a99163086648e898eed25
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7
       if: github.ref == 'refs/heads/master'
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - uses: docker/build-push-action@v2
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
       id: docker_build
       with:
         context: .
@@ -55,20 +59,22 @@ jobs:
           TORCH_REQUIREMENT=${{ matrix.url || format('torch=={0}', matrix.torch) }}
         # TODO add the latest tag, maybe somehow via docker/metadata-action
         tags: |
+          ghcr.io/okoko/python-torch:${{ matrix.torch }}-${{ matrix.python }}
           okoko/python-torch:${{ matrix.torch }}-${{ matrix.python }}
         # https://github.com/docker/build-push-action/blob/master/docs/advanced/cache.md#github-cache
         cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
         cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }},mode=max
+
   # Can not use Personal Access Token to update the README. Returns FORBIDDEN.
-  # describe:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/master'
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - name: Docker Hub Description
-  #     uses: peter-evans/dockerhub-description@v2
-  #     with:
-  #       username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #       password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #       repository: okoko/python-torch
+  describe:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+    - uses: actions/checkout@v3
+    - name: Docker Hub Description
+      uses: peter-evans/dockerhub-description@836d7e6aa8f6f32dce26f5a1dd46d3dc24997eae
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        repository: okoko/python-torch
