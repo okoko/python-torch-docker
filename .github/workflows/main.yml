@@ -52,7 +52,7 @@ jobs:
         context: .
         push: ${{ github.ref == 'refs/heads/master' }}
         build-args: |
-          CREATED=${{ needs.when.outputs.created }}
+          CREATED=${{ steps.created.outputs.created }}
           SOURCE_COMMIT=${{ github.sha }}
           PYTHON=${{ matrix.python }}
           TORCH=${{ matrix.torch }}
