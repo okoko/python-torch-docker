@@ -39,15 +39,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Log in to the Container registry
-      uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
     - uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-      id: docker_build
       with:
         context: .
         push: ${{ github.ref == 'refs/heads/master' }}
@@ -59,7 +51,6 @@ jobs:
           TORCH_REQUIREMENT=${{ matrix.url || format('torch=={0}', matrix.torch) }}
         # TODO add the latest tag, maybe somehow via docker/metadata-action
         tags: |
-          ghcr.io/okoko/python-torch:${{ matrix.torch }}-${{ matrix.python }}
           okoko/python-torch:${{ matrix.torch }}-${{ matrix.python }}
         # https://github.com/docker/build-push-action/blob/master/docs/advanced/cache.md#github-cache
         cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
