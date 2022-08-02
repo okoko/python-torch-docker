@@ -1,9 +1,9 @@
-# syntax=docker/dockerfile:1.2
+# syntax=docker/dockerfile:1.4
 
 ARG PYTHON=3.9.12
 ARG TORCH=1.11.0
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
-ARG NUMPY=1.22.3
+ARG NUMPY=1.23.1
 ARG CREATED
 ARG SOURCE_COMMIT
 
