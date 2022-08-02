@@ -9,6 +9,8 @@ on:
     # min hour dom month dow
     - cron: '42 3 2 * *'
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
