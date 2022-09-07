@@ -17,14 +17,14 @@ jobs:
     strategy:
       matrix:
         include:
-        - torch: '1.11.0'
-          python: '3.9.12'
-        - torch: '1.11.0'
-          python: '3.9.12-slim'
         - torch: '1.12.0'
           python: '3.9.13'
         - torch: '1.12.0'
           python: '3.9.13-slim'
+        - torch: '1.12.1'
+          python: '3.10.7'
+        - torch: '1.12.1'
+          python: '3.10.7-slim'
     steps:
     - id: created
       run: echo "::set-output name=created::$(date --utc +%Y-%m-%dT%H:%M:%SZ)"
@@ -32,16 +32,16 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@94ab11c41e45d028884a99163086648e898eed25
+      uses: docker/setup-buildx-action@dc7b9719a96d48369863986a06765841d7ea23f6 # v2.0.0
 
     - name: Log in to Docker Hub
-      uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7
+      uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b # v2.0.0
       if: github.ref == 'refs/heads/master'
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+    - uses: docker/build-push-action@c84f38281176d4c9cdb1626ffafcd6b3911b5d94 # v3.1.1
       with:
         context: .
         push: ${{ github.ref == 'refs/heads/master' }}
@@ -66,7 +66,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Docker Hub Description
-      uses: peter-evans/dockerhub-description@836d7e6aa8f6f32dce26f5a1dd46d3dc24997eae
+      uses: peter-evans/dockerhub-description@da890086d39c735e41d8823c8a95bde4302c3d64 # v3.1.0
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
