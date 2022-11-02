@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
-ARG PYTHON=3.10.8
-ARG TORCH=1.12.1
+ARG PYTHON=3.11.0
+ARG TORCH=1.13.0
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
 ARG NUMPY=1.23.4
 ARG CREATED
@@ -22,13 +22,16 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
 ENV NVIDIA_VISIBLE_DEVICES "all"
 ENV NVIDIA_DRIVER_CAPABILITIES "compute,utility"
 # libnvidia-ml.so location on k8s that does not run ldconfig
-ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib64
+ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
 
 ARG TORCH
 ENV TORCH_VERSION="${TORCH}"
 ENV NUMPY_VERSION="${NUMPY}"
 # Nvidia GPU device plugin on kubernetes mounts the driver here
 ENV PATH=${PATH}:/usr/local/nvidia/bin
+
+# Save memory by enabling lazy loading on CUDA 11.7+
+ENV CUDA_MODULE_LOADING=LAZY
 
 ARG PYTHON
 ARG CREATED
