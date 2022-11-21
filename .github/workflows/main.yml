@@ -66,7 +66,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Docker Hub Description
-      uses: peter-evans/dockerhub-description@da890086d39c735e41d8823c8a95bde4302c3d64 # v3.1.0
+      uses: peter-evans/dockerhub-description@93b93397c27ed52b4055b8c6b2f8d92456ab3c56 # v3.1.2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
