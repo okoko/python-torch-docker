@@ -18,13 +18,13 @@ jobs:
       matrix:
         include:
         - torch: '1.13.1'
-          python: '3.10.9'
+          python: '3.10.10'
         - torch: '1.13.1'
-          python: '3.10.9-slim'
+          python: '3.10.10-slim'
         - torch: '1.13.1'
-          python: '3.11.1'
+          python: '3.11.2'
         - torch: '1.13.1'
-          python: '3.11.1-slim'
+          python: '3.11.2-slim'
     steps:
     - id: created
       run: echo "created=$(date --utc +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
