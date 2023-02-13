@@ -9,6 +9,18 @@ ARG SOURCE_COMMIT
 
 FROM python:${PYTHON}
 
+RUN --mount=type=cache,target=/var/cache/apt,id=bullseye-/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=bullseye-/var/lib/apt \
+    <<NUR
+    set -ex
+# To keep cache of downloaded .debs, replace docker configuration
+    rm -f /etc/apt/apt.conf.d/docker-clean
+    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive \
+    apt-get upgrade -y --no-install-recommends
+NUR
+
 COPY README.md LICENSE /
 
 ARG TORCH_REQUIREMENT
