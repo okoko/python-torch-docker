@@ -3,6 +3,7 @@
 ARG PYTHON=3.11.2
 ARG TORCH=1.13.1
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
+ARG EXTRA_INDEX_URL
 ARG NUMPY=1.24.2
 ARG CREATED
 ARG SOURCE_COMMIT
@@ -24,9 +25,10 @@ NUR
 COPY README.md LICENSE /
 
 ARG TORCH_REQUIREMENT
+ARG EXTRA_INDEX_URL
 ARG NUMPY
 RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
-    pip install --no-cache-dir ${TORCH_REQUIREMENT} numpy==${NUMPY}
+    pip install --no-cache-dir ${EXTRA_INDEX_URL:+--extra-index-url ${EXTRA_INDEX_URL}} ${TORCH_REQUIREMENT} numpy==${NUMPY}
 
 # nvidia-docker plugin uses these environment variables to provide services
 # into the container. See https://github.com/NVIDIA/nvidia-docker/wiki/Usage

@@ -21,18 +21,16 @@ jobs:
           python: '3.10.10'
         - torch: '1.13.1'
           python: '3.10.10-slim'
-        - torch: '1.13.1'
+        - torch: '1.13.1+cpu'
           python: '3.10.10'
-          url: 'https://download.pytorch.org/whl/cpu/torch-1.13.1%2Bcpu-cp310-cp310-linux_x86_64.whl'
-          suffix: '-cpu'
+          extra_index_url: 'https://download.pytorch.org/whl/cpu'
         - torch: '1.13.1'
           python: '3.11.2'
         - torch: '1.13.1'
           python: '3.11.2-slim'
-        - torch: '1.13.1'
+        - torch: '1.13.1+cpu'
           python: '3.11.2'
-          url: 'https://download.pytorch.org/whl/cpu/torch-1.13.1%2Bcpu-cp311-cp311-linux_x86_64.whl'
-          suffix: '-cpu'
+          extra_index_url: 'https://download.pytorch.org/whl/cpu'
     steps:
     - id: created
       run: echo "created=$(date --utc +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
@@ -59,12 +57,13 @@ jobs:
           PYTHON=${{ matrix.python }}
           TORCH=${{ matrix.torch }}
           TORCH_REQUIREMENT=${{ matrix.url || format('torch=={0}', matrix.torch) }}
+          EXTRA_INDEX_URL=${{ matrix.extra_index_url }}
         # TODO add the latest tag, maybe somehow via docker/metadata-action
         tags: |
-          okoko/python-torch:${{ matrix.torch }}-${{ matrix.python }}${{ matrix.suffix || '' }}
+          okoko/python-torch:${{ matrix.torch }}-${{ matrix.python }}
         # https://github.com/docker/build-push-action/blob/master/docs/advanced/cache.md#github-cache
-        cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}${{ matrix.suffix || '' }}
-        cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}${{ matrix.suffix || '' }},mode=max
+        cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
+        cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }},mode=max
 
   # Can not use Personal Access Token to update the README. Returns FORBIDDEN.
   describe:
