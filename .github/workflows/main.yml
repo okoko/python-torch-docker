@@ -23,14 +23,14 @@ jobs:
           python: '3.10.10-slim'
         - torch: '1.13.1+cpu'
           python: '3.10.10'
-          extra_index_url: 'https://download.pytorch.org/whl/cpu'
+          extra-index-url: 'https://download.pytorch.org/whl/cpu'
         - torch: '1.13.1'
           python: '3.11.2'
         - torch: '1.13.1'
           python: '3.11.2-slim'
         - torch: '1.13.1+cpu'
           python: '3.11.2'
-          extra_index_url: 'https://download.pytorch.org/whl/cpu'
+          extra-index-url: 'https://download.pytorch.org/whl/cpu'
     steps:
     - id: created
       run: echo "created=$(date --utc +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
@@ -47,6 +47,13 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+    - name: Build Tag
+      id: build-tag
+      # Tags have limited set of valid character, '+' not included
+      # https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests
+      run: |
+        echo "tag=$(echo "${{ matrix.torch }}-${{ matrix.python }}" | tr -c 'a-zA-Z0-9._-' '[-*]')" >> $GITHUB_OUTPUT
+
     - uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671 # v4.0.0
       with:
         context: .
@@ -57,10 +64,10 @@ jobs:
           PYTHON=${{ matrix.python }}
           TORCH=${{ matrix.torch }}
           TORCH_REQUIREMENT=${{ matrix.url || format('torch=={0}', matrix.torch) }}
-          EXTRA_INDEX_URL=${{ matrix.extra_index_url }}
+          EXTRA_INDEX_URL=${{ matrix.extra-index-url }}
         # TODO add the latest tag, maybe somehow via docker/metadata-action
         tags: |
-          okoko/python-torch:${{ matrix.torch }}-${{ matrix.python }}
+          okoko/python-torch:${{ steps.build-tag.outputs.tag }}
         # https://github.com/docker/build-push-action/blob/master/docs/advanced/cache.md#github-cache
         cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
         cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }},mode=max
