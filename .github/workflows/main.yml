@@ -2,7 +2,7 @@ name: Docker
 on:
   push:
     branches:
-    - master
+    - main
   # We want to monthly update the base image for security
   # TODO Can we avoid building the same image?
   schedule:
@@ -42,7 +42,7 @@ jobs:
 
     - name: Log in to Docker Hub
       uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # v2.1.0
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/main'
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -57,7 +57,7 @@ jobs:
     - uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671 # v4.0.0
       with:
         context: .
-        push: ${{ github.ref == 'refs/heads/master' }}
+        push: ${{ github.ref == 'refs/heads/main' }}
         build-args: |
           CREATED=${{ steps.created.outputs.created }}
           SOURCE_COMMIT=${{ github.sha }}
@@ -76,7 +76,7 @@ jobs:
   describe:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     steps:
     - uses: actions/checkout@v3
     - name: Docker Hub Description
