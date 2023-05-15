@@ -89,7 +89,7 @@ jobs:
       with:
         script: |
           try {
-            github.rest.git.createRef({
+            await github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: 'refs/tags/${{ steps.build-tag.outputs.tag }}',
@@ -97,7 +97,7 @@ jobs:
             });
           } catch(e) {
             if (e.status === 422) {
-              github.rest.git.updateRef({
+              await github.rest.git.updateRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref: 'refs/tags/${{ steps.build-tag.outputs.tag }}',
