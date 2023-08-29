@@ -1,17 +1,17 @@
 # syntax=docker/dockerfile:1.4
 
-ARG PYTHON=3.11.4
+ARG PYTHON=3.11.5
 ARG TORCH=2.0.1
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
 ARG EXTRA_INDEX_URL
-ARG NUMPY=1.25.1
+ARG NUMPY=1.25.2
 ARG CREATED
 ARG SOURCE_COMMIT
 
 FROM python:${PYTHON}
 
-RUN --mount=type=cache,target=/var/cache/apt,id=bullseye-/var/cache/apt \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=bullseye-/var/lib/apt \
+RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=bookworm-/var/lib/apt \
     <<NUR
     set -ex
 # To keep cache of downloaded .debs, replace docker configuration

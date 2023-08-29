@@ -18,11 +18,11 @@ jobs:
       matrix:
         include:
         - torch: '2.0.1'
-          python: '3.11.4'
+          python: '3.11.5'
         - torch: '2.0.1'
-          python: '3.11.4-slim'
+          python: '3.11.5-slim'
         - torch: '2.0.1+cpu'
-          python: '3.11.4'
+          python: '3.11.5'
           extra-index-url: 'https://download.pytorch.org/whl/cpu'
     steps:
     - id: created
