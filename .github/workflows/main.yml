@@ -18,15 +18,15 @@ jobs:
       matrix:
         include:
         - torch: '2.1.0'
-          python: '3.11.6'
-        - torch: '2.1.0'
           python: '3.11.6-slim'
         - torch: '2.1.0+cpu'
           python: '3.11.6'
           extra-index-url: 'https://download.pytorch.org/whl/cpu'
-        - torch: '2.0.1'
+        - torch: '2.1.1'
+          python: '3.11.6'
+        - torch: '2.1.1'
           python: '3.11.6-slim'
-        - torch: '2.0.1+cpu'
+        - torch: '2.1.1+cpu'
           python: '3.11.6'
           extra-index-url: 'https://download.pytorch.org/whl/cpu'
     steps:
