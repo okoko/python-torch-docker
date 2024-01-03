@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1.4
 
-ARG PYTHON=3.11.6
-ARG TORCH=2.1.1
+ARG PYTHON=3.11.7
+ARG TORCH=2.1.2
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
 ARG EXTRA_INDEX_URL
-ARG NUMPY=1.26.2
 ARG CREATED
 ARG SOURCE_COMMIT
+ARG CONSTRAINTS=constraints.txt
 
 FROM python:${PYTHON}
 
@@ -24,11 +24,14 @@ NUR
 
 COPY README.md LICENSE /
 
+ARG CONSTRAINTS
 ARG TORCH_REQUIREMENT
 ARG EXTRA_INDEX_URL
-ARG NUMPY
-RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
-    pip install --no-cache-dir ${EXTRA_INDEX_URL:+--extra-index-url ${EXTRA_INDEX_URL}} ${TORCH_REQUIREMENT} numpy==${NUMPY}
+RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
+ pip install --no-cache-dir \
+ -c /tmp/constraints.txt \
+ ${EXTRA_INDEX_URL:+--extra-index-url ${EXTRA_INDEX_URL}} \
+ ${TORCH_REQUIREMENT}
 
 # nvidia-docker plugin uses these environment variables to provide services
 # into the container. See https://github.com/NVIDIA/nvidia-docker/wiki/Usage
@@ -40,7 +43,6 @@ ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
 
 ARG TORCH
 ENV TORCH_VERSION="${TORCH}"
-ENV NUMPY_VERSION="${NUMPY}"
 # Nvidia GPU device plugin on kubernetes mounts the driver here
 ENV PATH=${PATH}:/usr/local/nvidia/bin
 
@@ -64,4 +66,3 @@ LABEL org.opencontainers.image.version="${TORCH}-${PYTHON}"
 LABEL org.opencontainers.image.revision="${SOURCE_COMMIT}"
 LABEL org.opencontainers.image.version.python="${PYTHON}"
 LABEL org.opencontainers.image.version.torch="${TORCH}"
-LABEL org.opencontainers.image.version.numpy="${NUMPY}"
