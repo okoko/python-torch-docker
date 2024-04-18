@@ -38,17 +38,17 @@ ARG TARGETPLATFORM
 #  ${EXTRA_INDEX_URL:+--extra-index-url ${EXTRA_INDEX_URL}} \
 #  ${TORCH_REQUIREMENT}
 
+ARG ARM64_EXTRA_DEPS="libopenblas-dev libopenmpi-dev openmpi-common openmpi-bin gfortran libomp-dev"
 
 RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
     case ${TARGETPLATFORM} in \
+        # For arm64 install torch from custom wheel, plus some extra dependencies
         "linux/arm64") TORCH_INSTALL=torch-2.1.2-cp311-cp311-linux_aarch64.whl; \
-        apt-get update && apt install -y \
-        libopenblas-dev \
-        libopenmpi-dev \
-        openmpi-common \
-        openmpi-bin \
-        gfortran libomp-dev ;; \
-        *)             TORCH_INSTALL=${TORCH_REQUIREMENT} ;; \
+                        apt-get update && apt install -y ${ARM64_EXTRA_DEPS} \
+                        ;; \
+        # For x86 install official torch distribution
+        *)             TORCH_INSTALL=${TORCH_REQUIREMENT} \
+                        ;; \
     esac && \
     pip install --no-cache-dir \
     -c /tmp/constraints.txt \
