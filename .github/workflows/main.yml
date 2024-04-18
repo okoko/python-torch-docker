@@ -61,7 +61,7 @@ jobs:
           ${{ matrix.constraints && format('CONSTRAINTS={0}', matrix.constraints) || '' }}
         # TODO add the latest tag, maybe somehow via docker/metadata-action
         tags: |
-          okoko/python-torch:${{ steps.build-tag.outputs.tag }}
+          opukka/python-torch:${{ steps.build-tag.outputs.tag }}
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
         cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }},mode=max
@@ -96,15 +96,15 @@ jobs:
           }
 
   # Can not use Personal Access Token to update the README. Returns FORBIDDEN.
-  describe:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-    - uses: actions/checkout@v4
-    - name: Docker Hub Description
-      uses: peter-evans/dockerhub-description@dc67fad7001ef9e8e3c124cb7a64e16d0a63d864 # v3.4.2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-        repository: okoko/python-torch
+  # describe:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Docker Hub Description
+  #     uses: peter-evans/dockerhub-description@dc67fad7001ef9e8e3c124cb7a64e16d0a63d864 # v3.4.2
+  #     with:
+  #       username: ${{ secrets.DOCKERHUB_USERNAME }}
+  #       password: ${{ secrets.DOCKERHUB_TOKEN }}
+  #       repository: okoko/python-torch
