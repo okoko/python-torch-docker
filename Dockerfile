@@ -24,6 +24,8 @@ NUR
 
 COPY README.md LICENSE /
 
+COPY --from=opukka/torch-wheels /torch-2.1.1-cp311-cp311-linux_aarch64.whl /torch-2.1.2-cp311-cp311-linux_aarch64.whl /
+
 ARG CONSTRAINTS
 ARG TORCH_REQUIREMENT
 ARG EXTRA_INDEX_URL
@@ -32,6 +34,8 @@ RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
  -c /tmp/constraints.txt \
  ${EXTRA_INDEX_URL:+--extra-index-url ${EXTRA_INDEX_URL}} \
  ${TORCH_REQUIREMENT}
+
+RUN rm /torch-2.1.1-cp311-cp311-linux_aarch64.whl /torch-2.1.2-cp311-cp311-linux_aarch64.whl
 
 # nvidia-docker plugin uses these environment variables to provide services
 # into the container. See https://github.com/NVIDIA/nvidia-docker/wiki/Usage
