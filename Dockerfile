@@ -25,6 +25,7 @@ NUR
 COPY README.md LICENSE /
 
 # COPY --from=opukka/torch-wheels /torch-2.1.1-cp311-cp311-linux_aarch64.whl /torch-2.1.2-cp311-cp311-linux_aarch64.whl /
+# TODO: copy wheel pushed by gh actions instead
 COPY --from=opukka/torch-wheels /torch*.whl /
 
 ARG CONSTRAINTS
@@ -38,13 +39,17 @@ ARG TARGETPLATFORM
 #  ${EXTRA_INDEX_URL:+--extra-index-url ${EXTRA_INDEX_URL}} \
 #  ${TORCH_REQUIREMENT}
 
+# Extra dependencies for Jetson
+# Retreived from: https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/Dockerfile
 ARG ARM64_EXTRA_DEPS="libopenblas-dev libopenmpi-dev openmpi-common openmpi-bin gfortran libomp-dev"
 
 RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
     case ${TARGETPLATFORM} in \
         # For arm64 install torch from custom wheel, plus some extra dependencies
         "linux/arm64") TORCH_INSTALL=torch-2.1.2-cp311-cp311-linux_aarch64.whl; \
-                        apt-get update && apt install -y ${ARM64_EXTRA_DEPS} \
+                        apt-get update && apt-get install -y ${ARM64_EXTRA_DEPS} \
+                        && rm -rf /var/lib/apt/lists/* \
+                        && apt-get clean \
                         ;; \
         # For x86 install official torch distribution
         *)             TORCH_INSTALL=${TORCH_REQUIREMENT} \
