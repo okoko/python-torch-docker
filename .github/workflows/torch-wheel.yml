@@ -13,8 +13,6 @@ on:
             type: boolean
             default: true
 
-env:
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME}}
 jobs:
   build-pytorch-wheel:
     runs-on: ubuntu-latest
