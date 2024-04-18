@@ -19,11 +19,14 @@ jobs:
         include:
         - torch: '2.1.2'
           python: '3.11.7'
+          platforms: linux/amd64,linux/arm64
         - torch: '2.1.2'
           python: '3.11.7-slim'
+          platforms: linux/amd64,linux/arm64
         - torch: '2.1.2+cpu'
           python: '3.11.7'
           extra-index-url: 'https://download.pytorch.org/whl/cpu'
+          platforms: linux/amd64
     steps:
     - id: created
       run: echo "created=$(date --utc +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
@@ -65,7 +68,7 @@ jobs:
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
         cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }},mode=max
-        platforms: linux/amd64,linux/arm64
+        platforms: ${{ matrix.platforms }}
 
     # With org.opencontainers.image.source pointing to this repository Dockerfile FROM updates in pull requests can be scanned
     # if the commits have matching tags with the image.
