@@ -13,7 +13,6 @@ on:
             type: boolean
             default: true
 
-
 jobs:
   build-pytorch-wheel:
     runs-on: ubuntu-latest
