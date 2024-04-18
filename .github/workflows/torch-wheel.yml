@@ -13,6 +13,8 @@ on:
             type: boolean
             default: true
 
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME}}
 jobs:
   build-pytorch-wheel:
     runs-on: ubuntu-latest
@@ -41,7 +43,7 @@ jobs:
           FOO=bar
         # TODO add the latest tag, maybe somehow via docker/metadata-action
         tags: |
-            ${{ secrets.DOCKERHUB_TOKEN }}/torch-wheel-arm64:${{ inputs.pytorch-version }}
+            ${{ env.DOCKERHUB_USERNAME }}/torch-wheel-arm64:${{ inputs.pytorch-version }}
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=torch-wheel
         cache-to: type=gha,scope=torch-wheel,mode=max
