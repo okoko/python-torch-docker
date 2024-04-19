@@ -10,6 +10,8 @@ ARG CREATED
 ARG SOURCE_COMMIT
 ARG CONSTRAINTS=constraints.txt
 
+FROM ${TORCH_WHEEL_SOURCE} as wheel-image
+
 FROM python:${PYTHON}
 
 RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt \
@@ -48,7 +50,7 @@ ARG ARM64_EXTRA_DEPS="libopenblas-dev libopenmpi-dev openmpi-common openmpi-bin 
 
 
 RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
-    --mount=from=${TORCH_WHEEL_SOURCE},src=/,target=/tmp/torch-wheels \
+    --mount=from=wheel-image,src=/,target=/tmp/torch-wheels \
     case ${TARGETPLATFORM} in \
         # For arm64 install torch from custom wheel, plus some extra dependencies
         "linux/arm64") TORCH_INSTALL="/tmp/torch-wheels/*.whl"; \
