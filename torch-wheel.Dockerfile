@@ -17,7 +17,9 @@ ARG PYTORCH_BUILD_NUMBER=1
 RUN apt-get update && apt-get install -y software-properties-common
 RUN add-apt-repository ppa:deadsnakes/ppa
 
-RUN apt-get update && \
+RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=bookworm-/var/lib/apt \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
             libopenblas-dev \
             libopenmpi-dev \
@@ -49,7 +51,8 @@ RUN git clone --branch v${PYTORCH_BUILD_VERSION} --depth=1 --recursive https://g
 
 # Build PyTorch wheel for Jetson  
 # TORCH_CUDA_ARCH_LIST: Xavier = 7.2, Orin = 8.7
-RUN cd /tmp/pytorch && \
+RUN --mount=type=cache,target=/opt/ccache \
+    cd /tmp/pytorch && \
     export USE_NCCL=0 && \
     export USE_QNNPACK=0 && \
     export USE_PYTORCH_QNNPACK=0 && \
