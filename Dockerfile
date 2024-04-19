@@ -39,7 +39,7 @@ ARG TARGETPLATFORM
 #  ${EXTRA_INDEX_URL:+--extra-index-url ${EXTRA_INDEX_URL}} \
 #  ${TORCH_REQUIREMENT}
 
-# Extra dependencies for Jetson
+# Extra dependencies needed to run pytorch on Jetson
 # Retreived from: https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/Dockerfile
 ARG ARM64_EXTRA_DEPS="libopenblas-dev libopenmpi-dev openmpi-common openmpi-bin gfortran libomp-dev"
 
@@ -47,6 +47,7 @@ RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
     case ${TARGETPLATFORM} in \
         # For arm64 install torch from custom wheel, plus some extra dependencies
         "linux/arm64") TORCH_INSTALL=torch-2.1.2-cp311-cp311-linux_aarch64.whl; \
+        # TODO: Move these to RUN command above or to consumer image
                         apt-get update && apt-get install -y ${ARM64_EXTRA_DEPS} \
                         && rm -rf /var/lib/apt/lists/* \
                         && apt-get clean \

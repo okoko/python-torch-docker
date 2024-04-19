@@ -4,7 +4,7 @@ on:
     branches:
     - main
     paths-ignore:
-    - './torch-wheel.Dockerfile'
+    - 'torch-wheel.Dockerfile'
     - '.github/workflows/torch-wheel.yml'
   # We want to monthly update the base image for security
   # TODO Can we avoid building the same image?
