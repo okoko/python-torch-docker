@@ -19,6 +19,8 @@ RUN add-apt-repository ppa:deadsnakes/ppa
 
 RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt \
     --mount=type=cache,target=/var/lib/apt,sharing=locked,id=bookworm-/var/lib/apt \
+    rm -f /etc/apt/apt.conf.d/docker-clean && \
+    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
             libopenblas-dev \
