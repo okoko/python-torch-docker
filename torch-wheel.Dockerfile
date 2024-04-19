@@ -19,12 +19,12 @@ RUN add-apt-repository ppa:deadsnakes/ppa
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-		    libopenblas-dev \
-		    libopenmpi-dev \
+            libopenblas-dev \
+            libopenmpi-dev \
             openmpi-bin \
             openmpi-common \
-		    gfortran \
-		    libomp-dev \
+            gfortran \
+            libomp-dev \
             git \
             python3.11 \
             python3.11-dev \
