@@ -4,6 +4,8 @@ ARG PYTHON=3.11.7
 ARG TORCH=2.1.2
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
 ARG EXTRA_INDEX_URL
+ARG TORCH_WHEEL_IMAGE="okoko/torch-wheels"
+ARG TORCH_WHEEL_SOURCE="${TORCH_WHEEL_IMAGE}:${TORCH}"
 ARG CREATED
 ARG SOURCE_COMMIT
 ARG CONSTRAINTS=constraints.txt
@@ -26,11 +28,12 @@ COPY README.md LICENSE /
 
 # COPY --from=opukka/torch-wheels /torch-2.1.1-cp311-cp311-linux_aarch64.whl /torch-2.1.2-cp311-cp311-linux_aarch64.whl /
 # TODO: copy wheel pushed by gh actions instead
-COPY --from=opukka/torch-wheels /torch*.whl /
+# COPY --from=opukka/torch-wheels /torch*.whl /
 
 ARG CONSTRAINTS
 ARG TORCH_REQUIREMENT
 ARG EXTRA_INDEX_URL
+ARG TORCH_WHEEL_SOURCE
 ARG TARGETPLATFORM
 
 # RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
@@ -43,24 +46,25 @@ ARG TARGETPLATFORM
 # Retreived from: https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/Dockerfile
 ARG ARM64_EXTRA_DEPS="libopenblas-dev libopenmpi-dev openmpi-common openmpi-bin gfortran libomp-dev"
 
+
 RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
+    --mount=from=${TORCH_WHEEL_SOURCE},src=/,target=/tmp/torch-wheels \
     case ${TARGETPLATFORM} in \
         # For arm64 install torch from custom wheel, plus some extra dependencies
-        "linux/arm64") TORCH_INSTALL=torch-2.1.2-cp311-cp311-linux_aarch64.whl; \
+        "linux/arm64") TORCH_INSTALL="/tmp/torch-wheels/*.whl"; \
         # TODO: Move these to RUN command above or to consumer image
                         apt-get update && apt-get install -y ${ARM64_EXTRA_DEPS} \
                         && rm -rf /var/lib/apt/lists/* \
                         && apt-get clean \
                         ;; \
-        # For x86 install official torch distribution
+        # For x86 install official torch distribution from PyPi
         *)             TORCH_INSTALL=${TORCH_REQUIREMENT} \
                         ;; \
     esac && \
     pip install --no-cache-dir \
     -c /tmp/constraints.txt \
     ${EXTRA_INDEX_URL:+--extra-index-url ${EXTRA_INDEX_URL}} \
-    ${TORCH_INSTALL} && \
-    rm /torch*.whl
+    ${TORCH_INSTALL}
 
 
 # RUN rm /torch-2.1.1-cp311-cp311-linux_aarch64.whl /torch-2.1.2-cp311-cp311-linux_aarch64.whl
@@ -99,3 +103,4 @@ LABEL org.opencontainers.image.version="${TORCH}-${PYTHON}"
 LABEL org.opencontainers.image.revision="${SOURCE_COMMIT}"
 LABEL org.opencontainers.image.version.python="${PYTHON}"
 LABEL org.opencontainers.image.version.torch="${TORCH}"
+LABEL org.opencontainers.image.torchWheelSource="${TORCH_WHEEL_SOURCE}"
