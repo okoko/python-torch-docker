@@ -4,8 +4,11 @@ ARG PYTHON=3.11.7
 ARG TORCH=2.1.2
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
 ARG EXTRA_INDEX_URL
-ARG TORCH_WHEEL_IMAGE="okoko/torch-wheels"
-ARG TORCH_WHEEL_SOURCE="${TORCH_WHEEL_IMAGE}:${TORCH}"
+# ARG TORCH_WHEEL_IMAGE="okoko/torch-wheels"
+ARG TORCH_WHEEL_SOURCE="okoko/torch-wheels:2.1.2"
+## wheel_source_repo + wheel_source_tag
+## käsittele cpu keissi
+#ARG TORCH_WHEEL_SOURCE="${TORCH_WHEEL_IMAGE}:${TORCH}"
 ARG CREATED
 ARG SOURCE_COMMIT
 ARG CONSTRAINTS=constraints.txt
