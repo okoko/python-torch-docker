@@ -35,8 +35,6 @@ RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt \
         # For arm64 install some extra dependencies
         "linux/arm64")
             apt-get install -y ${ARM64_EXTRA_DEPS}
-            rm -rf /var/lib/apt/lists/*
-            apt-get clean
         ;;
     esac
 NUR
@@ -54,7 +52,7 @@ ARG TARGETPLATFORM
 RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
     --mount=from=wheel-image,src=/,target=/tmp/torch-wheels \
     case ${TARGETPLATFORM} in \
-        # For arm64 install torch from custom wheel, plus some extra dependencies
+        # For arm64 install torch from custom wheel
         "linux/arm64") TORCH_INSTALL="/tmp/torch-wheels/*.whl"; \
                         ;; \
         # For x86 install official torch distribution from PyPi
