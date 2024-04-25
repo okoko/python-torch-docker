@@ -50,15 +50,13 @@ ARG TORCH_WHEEL_SOURCE
 RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
     --mount=from=wheel-image,src=/,target=/tmp/torch-wheels \
     <<NUR
-    set -ex
-    case ${TARGETPLATFORM} in \
-        # For arm64 install torch from custom wheel
-        "linux/arm64") TORCH_INSTALL="/tmp/torch-wheels/*.whl";
-                        ;; \
-        # For x86 install official torch distribution from PyPi
-        *)             TORCH_INSTALL=${TORCH_REQUIREMENT}
-                        ;;
-    esac
+    set -ex \
+    # If any wheel files exist, install from those, otherwise install from PyPi
+    if ls /tmp/torch-wheels/*.whl 1> /dev/null 2>&1; then
+        TORCH_INSTALL="/tmp/torch-wheels/*.whl"
+    else
+        TORCH_INSTALL=${TORCH_REQUIREMENT};
+    fi
     pip install --no-cache-dir \
     -c /tmp/constraints.txt \
     ${EXTRA_INDEX_URL:+--extra-index-url ${EXTRA_INDEX_URL}} \
