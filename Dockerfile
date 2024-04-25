@@ -16,6 +16,7 @@ FROM ${TORCH_WHEEL_SOURCE} as wheel-image
 
 FROM python:${PYTHON}
 
+ARG TARGETPLATFORM
 # Extra dependencies needed to run pytorch on Jetson
 # Retreived from: https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/Dockerfile
 ARG ARM64_EXTRA_DEPS="libopenblas-dev libopenmpi-dev openmpi-common openmpi-bin gfortran libomp-dev"
@@ -46,8 +47,6 @@ ARG CONSTRAINTS
 ARG TORCH_REQUIREMENT
 ARG EXTRA_INDEX_URL
 ARG TORCH_WHEEL_SOURCE
-ARG TARGETPLATFORM
-
 
 RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
     --mount=from=wheel-image,src=/,target=/tmp/torch-wheels \
