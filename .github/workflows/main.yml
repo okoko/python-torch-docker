@@ -66,7 +66,7 @@ jobs:
           PYTHON=${{ matrix.python }}
           TORCH=${{ matrix.torch }}
           TORCH_REQUIREMENT=${{ matrix.url || format('torch=={0}', matrix.torch) }}
-          TORCH_WHEEL_SOURCE=${{ secrets.DOCKERHUB_USERNAME }}/torch-wheels:${{ matrix.torch-wheel-tag }}
+          TORCH_WHEEL_SOURCE=${{ matrix.torch-wheel-tag && format('{0}/torch-wheels:{1}', secrets.DOCKERHUB_USERNAME, matrix.torch-wheel-tag) || 'scratch'}}
           EXTRA_INDEX_URL=${{ matrix.extra-index-url }}
           ${{ matrix.constraints && format('CONSTRAINTS={0}', matrix.constraints) || '' }}
         # TODO add the latest tag, maybe somehow via docker/metadata-action
