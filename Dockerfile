@@ -17,14 +17,11 @@ FROM ${TORCH_WHEEL_SOURCE} as wheel-image
 FROM python:${PYTHON}
 
 ARG TARGETPLATFORM
-# Extra dependencies needed to run pytorch on Jetson
-# Retreived from: https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/Dockerfile
-ARG ARM64_EXTRA_DEPS="libopenblas-dev libopenmpi-dev openmpi-common openmpi-bin gfortran libomp-dev"
 
 RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt \
     --mount=type=cache,target=/var/lib/apt,sharing=locked,id=bookworm-/var/lib/apt \
     <<NUR
-    set -ex
+    set -ex \
 # To keep cache of downloaded .debs, replace docker configuration
     rm -f /etc/apt/apt.conf.d/docker-clean
     echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
@@ -33,9 +30,11 @@ RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt \
     apt-get upgrade -y --no-install-recommends
 
     case ${TARGETPLATFORM} in \
-        # For arm64 install some extra dependencies
+        # Extra dependencies needed to run pytorch on Jetson
+        # Retreived from: https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/Dockerfile
         "linux/arm64")
-            apt-get install -y ${ARM64_EXTRA_DEPS}
+            DEBIAN_FRONTEND=noninteractive \
+            apt-get install -y libopenblas-dev libopenmpi-dev openmpi-common openmpi-bin gfortran libomp-dev
         ;;
     esac
 NUR
