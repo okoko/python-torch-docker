@@ -75,7 +75,7 @@ jobs:
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
         cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }},mode=max
-        platforms: ${{ matrix.platforms }}
+        platforms: ${{ matrix.platforms || 'linux/amd64,linux/arm64' }}
 
     # With org.opencontainers.image.source pointing to this repository Dockerfile FROM updates in pull requests can be scanned
     # if the commits have matching tags with the image.
