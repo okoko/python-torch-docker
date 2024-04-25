@@ -85,4 +85,4 @@ FROM ${TARGETARCH} as wheels
 # We only want to store the wheel in the final image
 FROM scratch as wheel-container
 
-COPY --from=builder /*.whl /
+COPY --from=wheels /*.whl /
