@@ -48,6 +48,6 @@ jobs:
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=torch-wheel
         cache-to: type=gha,scope=torch-wheel,mode=max
-        platforms: linux/arm64
+        platforms: linux/amd64,linux/arm64
 
 
