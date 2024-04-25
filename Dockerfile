@@ -11,7 +11,7 @@ ARG SOURCE_COMMIT
 ARG CONSTRAINTS=constraints.txt
 
 # Using variable in RUN --mount=from gives error 'from' doesn't support variable expansion, define alias stage instead
-FROM --platform=${TARGETPLATFORM} ${TORCH_WHEEL_SOURCE} as wheel-image
+FROM ${TORCH_WHEEL_SOURCE} as wheel-image
 
 
 FROM python:${PYTHON}
