@@ -10,7 +10,7 @@ ARG CREATED
 ARG SOURCE_COMMIT
 ARG CONSTRAINTS=constraints.txt
 
-# Cannot use ARG directly in 'RUN --mount ..', so use this stage as an alias
+# Using variable in RUN --mount=from gives error 'from' doesn't support variable expansion, define alias stage instead
 FROM ${TORCH_WHEEL_SOURCE} as wheel-image
 
 
