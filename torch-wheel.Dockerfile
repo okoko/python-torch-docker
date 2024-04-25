@@ -1,9 +1,3 @@
-# FROM alpine:latest
-
-# RUN echo "Hello world"
-
-# RUN echo "tesdata" > /testfile
-
 ARG PYTORCH_BUILD_VERSION=2.1.2
 ARG BASE_IMAGE=nvcr.io/nvidia/l4t-cuda:12.2.12-devel
 
