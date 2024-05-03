@@ -5,19 +5,8 @@ ARG BASE_IMAGE=nvcr.io/nvidia/l4t-cuda:12.2.12-devel
 FROM scratch as amd64
 
 
-# Alias to temporarily copy wheel from.
-# TODO: Remove after we can build arm wheel on github runners
-# FROM opukka/torch-wheels:${PYTORCH_BUILD_VERSION} as wheels-source
-
-# TODO: This is a temporary solution where we just copy the wheels from opukka/torch-wheels
-# Actual wheel building steps are commented out, return this once we have arm/self-hosted runner available
 # Builder stage for arm64 wheel
-# TODO: Switch to "FROM ${BASE_IMAGE} as arm64"
-# FROM scratch as arm64
 FROM ${BASE_IMAGE} as arm64
-
-# TODO: Remove after we can build arm wheel on github runners
-# COPY --from=wheels-source /*.whl /
 
 ENV DEBIAN_FRONTEND=noninteractive
 
