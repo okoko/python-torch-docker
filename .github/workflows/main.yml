@@ -3,6 +3,9 @@ on:
   push:
     branches:
     - main
+    paths-ignore:
+    - 'torch-wheel.Dockerfile'
+    - '.github/workflows/torch-wheel.yml'
   # We want to monthly update the base image for security
   # TODO Can we avoid building the same image?
   schedule:
@@ -18,12 +21,18 @@ jobs:
       matrix:
         include:
         - torch: '2.1.2'
+          torch-wheel-tag: '2.1.2'
           python: '3.11.7'
+          platforms: linux/amd64,linux/arm64
         - torch: '2.1.2'
+          torch-wheel-tag: '2.1.2'
           python: '3.11.7-slim'
+          platforms: linux/amd64,linux/arm64
         - torch: '2.1.2+cpu'
+          torch-wheel-tag: '2.1.2'
           python: '3.11.7'
           extra-index-url: 'https://download.pytorch.org/whl/cpu'
+          platforms: linux/amd64
     steps:
     - id: created
       run: echo "created=$(date --utc +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
@@ -57,14 +66,16 @@ jobs:
           PYTHON=${{ matrix.python }}
           TORCH=${{ matrix.torch }}
           TORCH_REQUIREMENT=${{ matrix.url || format('torch=={0}', matrix.torch) }}
+          TORCH_WHEEL_SOURCE=${{ matrix.torch-wheel-tag && format('{0}/torch-wheels:{1}', secrets.DOCKERHUB_USERNAME, matrix.torch-wheel-tag) || 'scratch'}}
           EXTRA_INDEX_URL=${{ matrix.extra-index-url }}
           ${{ matrix.constraints && format('CONSTRAINTS={0}', matrix.constraints) || '' }}
         # TODO add the latest tag, maybe somehow via docker/metadata-action
         tags: |
-          okoko/python-torch:${{ steps.build-tag.outputs.tag }}
+          ${{ secrets.DOCKERHUB_USERNAME }}/python-torch:${{ steps.build-tag.outputs.tag }}
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
         cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }},mode=max
+        platforms: ${{ matrix.platforms || 'linux/amd64,linux/arm64' }}
 
     # With org.opencontainers.image.source pointing to this repository Dockerfile FROM updates in pull requests can be scanned
     # if the commits have matching tags with the image.
@@ -107,4 +118,4 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-        repository: okoko/python-torch
+        repository: ${{ secrets.DOCKERHUB_USERNAME }}/python-torch
