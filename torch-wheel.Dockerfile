@@ -79,3 +79,11 @@ FROM ${TARGETARCH} AS wheels
 FROM scratch AS wheel-container
 
 COPY --from=wheels /*.whl /
+
+LABEL org.opencontainers.image.authors="Marko Kohtala <marko.kohtala@okoko.fi>"
+LABEL org.opencontainers.image.url="https://hub.docker.com/r/okoko/python-torch"
+LABEL org.opencontainers.image.documentation="https://github.com/okoko/python-torch-docker"
+LABEL org.opencontainers.image.source="https://github.com/okoko/python-torch-docker"
+LABEL org.opencontainers.image.vendor="Software Consulting Kohtala Ltd"
+LABEL org.opencontainers.image.licenses="(BSD-3 AND Python-2.0)"
+LABEL org.opencontainers.image.title="PyTorch wheels"

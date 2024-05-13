@@ -42,6 +42,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
+      id: push
       with:
         context: .
         file: ./torch-wheel.Dockerfile
@@ -50,4 +51,15 @@ jobs:
           TORCH_BUILD_VERSION=${{ inputs.pytorch-version }}
         tags: |
             ${{ vars.DOCKERHUB_USERNAME }}/torch-wheels:${{ inputs.pytorch-version }}
+        labels: |
+          org.opencontainers.image.created=${{ steps.created.outputs.created }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.version=${{ inputs.pytorch-version }}
         platforms: linux/amd64,linux/arm64
+
+    - name: Attest
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-name: ${{ vars.DOCKERHUB_USERNAME }}/torch-wheels
+        subject-digest: ${{ steps.push.outputs.digest }}
+        push-to-registry: true
