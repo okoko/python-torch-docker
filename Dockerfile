@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.4
 
-ARG PYTHON=3.11.7
+ARG PYTHON=3.11.9
 ARG TORCH=2.1.2
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
 ARG EXTRA_INDEX_URL

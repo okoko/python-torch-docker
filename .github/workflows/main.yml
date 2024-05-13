@@ -22,15 +22,15 @@ jobs:
         include:
         - torch: '2.1.2'
           torch-wheel-tag: '2.1.2'
-          python: '3.11.7'
+          python: '3.11.9'
           platforms: linux/amd64,linux/arm64
         - torch: '2.1.2'
           torch-wheel-tag: '2.1.2'
-          python: '3.11.7-slim'
+          python: '3.11.9-slim'
           platforms: linux/amd64,linux/arm64
         - torch: '2.1.2+cpu'
           torch-wheel-tag: '2.1.2'
-          python: '3.11.7'
+          python: '3.11.9'
           extra-index-url: 'https://download.pytorch.org/whl/cpu'
           platforms: linux/amd64
     steps:
