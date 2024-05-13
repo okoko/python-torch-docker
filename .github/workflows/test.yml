@@ -1,0 +1,12 @@
+name: Docker
+on:
+  push:
+    branches:
+    - actions-test
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "${{ secrets.DOCKERHUB_USERNAME }}" | base64
+    
