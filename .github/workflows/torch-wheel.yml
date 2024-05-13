@@ -1,0 +1,50 @@
+name: Build PyTorch Wheel
+on:
+  workflow_dispatch:
+    inputs:
+        pytorch-version:
+            description: 'Version of pytorch to build (e.g. 2.1.2)'
+            required: true
+            default: '2.1.2'
+            type: string
+        push-to-registry:
+            description: 'Push image to registry'
+            required: true
+            type: boolean
+            default: true
+
+jobs:
+  build-pytorch-wheel:
+    runs-on: [self-hosted, ARM64]
+    timeout-minutes: 1439  # GITHUB_TOKEN expires in 24 hours, so keep it just below that
+    steps:
+    - name: Print Inputs
+      run: echo "${{ toJSON(github.event.inputs) }}"
+
+    - id: created
+      run: echo "created=$(date --utc +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+      if: github.ref == 'refs/heads/main'
+      with:
+        username: ${{ vars.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
+      with:
+        context: .
+        file: ./torch-wheel.Dockerfile
+        push: ${{ inputs.push-to-registry || false }}
+        build-args: |
+          TORCH_BUILD_VERSION=${{ inputs.pytorch-version }}
+        # TODO add the latest tag, maybe somehow via docker/metadata-action
+        tags: |
+            ${{ vars.DOCKERHUB_USERNAME }}/torch-wheels:${{ inputs.pytorch-version }}
+        # https://docs.docker.com/build/ci/github-actions/cache/
+        platforms: linux/amd64,linux/arm64

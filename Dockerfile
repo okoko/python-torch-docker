@@ -4,12 +4,18 @@ ARG PYTHON=3.11.7
 ARG TORCH=2.1.2
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
 ARG EXTRA_INDEX_URL
+ARG TORCH_WHEEL_SOURCE="scratch"
 ARG CREATED
 ARG SOURCE_COMMIT
 ARG CONSTRAINTS=constraints.txt
 
+# Using variable in RUN --mount=from gives error 'from' doesn't support variable expansion, define alias stage instead
+FROM ${TORCH_WHEEL_SOURCE} as wheel-image
+
+
 FROM python:${PYTHON}
 
+ARG TARGETPLATFORM
 RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt \
     --mount=type=cache,target=/var/lib/apt,sharing=locked,id=bookworm-/var/lib/apt \
     <<NUR
@@ -20,6 +26,15 @@ RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt \
     apt-get update
     DEBIAN_FRONTEND=noninteractive \
     apt-get upgrade -y --no-install-recommends
+
+    case ${TARGETPLATFORM} in
+        # Extra dependencies needed to run pytorch on Jetson
+        # Retreived from: https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/Dockerfile
+        "linux/arm64")
+            DEBIAN_FRONTEND=noninteractive \
+            apt-get install -y libopenblas-dev libopenmpi-dev openmpi-common openmpi-bin gfortran libomp-dev
+        ;;
+    esac
 NUR
 
 COPY README.md LICENSE /
@@ -28,10 +43,21 @@ ARG CONSTRAINTS
 ARG TORCH_REQUIREMENT
 ARG EXTRA_INDEX_URL
 RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
- pip install --no-cache-dir \
- -c /tmp/constraints.txt \
- ${EXTRA_INDEX_URL:+--extra-index-url ${EXTRA_INDEX_URL}} \
- ${TORCH_REQUIREMENT}
+    --mount=from=wheel-image,src=/,target=/tmp/torch-wheels \
+    <<NUR
+    set -ex
+    # If any wheel files exist, install from those, otherwise install from PyPi
+    if ls /tmp/torch-wheels/*.whl 1> /dev/null 2>&1
+    then
+        TORCH_INSTALL="/tmp/torch-wheels/*.whl"
+    else
+        TORCH_INSTALL=${TORCH_REQUIREMENT}
+    fi
+    pip install --no-cache-dir \
+        -c /tmp/constraints.txt \
+        ${EXTRA_INDEX_URL:+--extra-index-url ${EXTRA_INDEX_URL}} \
+        ${TORCH_INSTALL}
+NUR
 
 # nvidia-docker plugin uses these environment variables to provide services
 # into the container. See https://github.com/NVIDIA/nvidia-docker/wiki/Usage
@@ -66,3 +92,5 @@ LABEL org.opencontainers.image.version="${TORCH}-${PYTHON}"
 LABEL org.opencontainers.image.revision="${SOURCE_COMMIT}"
 LABEL org.opencontainers.image.version.python="${PYTHON}"
 LABEL org.opencontainers.image.version.torch="${TORCH}"
+ARG TORCH_WHEEL_SOURCE
+LABEL org.opencontainers.image.torch-wheel-source="${TORCH_WHEEL_SOURCE}"
