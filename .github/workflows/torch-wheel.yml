@@ -59,6 +59,7 @@ jobs:
 
     - name: Attest
       uses: actions/attest-build-provenance@v1
+      if: ${{ inputs.push-to-registry }}
       with:
         subject-name: ${{ vars.DOCKERHUB_USERNAME }}/torch-wheels
         subject-digest: ${{ steps.push.outputs.digest }}
