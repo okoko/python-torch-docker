@@ -1,3 +1,8 @@
+# This requires
+# vars.DOCKERHUB_USERNAME for the result image account
+# secrets.DOCKERHUB_USERNAME for the login account that pushes the image
+# secrets.DOCKERHUB_TOKEN password for the login account password that pushes the image
+
 name: Build PyTorch Wheel
 on:
   workflow_dispatch:
@@ -33,7 +38,7 @@ jobs:
       uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
       if: github.ref == 'refs/heads/main'
       with:
-        username: ${{ vars.DOCKERHUB_USERNAME }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
@@ -43,8 +48,6 @@ jobs:
         push: ${{ inputs.push-to-registry || false }}
         build-args: |
           TORCH_BUILD_VERSION=${{ inputs.pytorch-version }}
-        # TODO add the latest tag, maybe somehow via docker/metadata-action
         tags: |
             ${{ vars.DOCKERHUB_USERNAME }}/torch-wheels:${{ inputs.pytorch-version }}
-        # https://docs.docker.com/build/ci/github-actions/cache/
         platforms: linux/amd64,linux/arm64

@@ -1,3 +1,8 @@
+# This requires
+# vars.DOCKERHUB_USERNAME for the result image account
+# secrets.DOCKERHUB_USERNAME for the account that pushes the image
+# secrets.DOCKERHUB_TOKEN for the account password that pushes the image
+
 name: Docker
 on:
   push:
@@ -46,7 +51,7 @@ jobs:
       uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
       if: github.ref == 'refs/heads/main'
       with:
-        username: ${{ vars.DOCKERHUB_USERNAME }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Build Tag
@@ -116,6 +121,6 @@ jobs:
     - name: Docker Hub Description
       uses: peter-evans/dockerhub-description@dc67fad7001ef9e8e3c124cb7a64e16d0a63d864 # v3.4.2
       with:
-        username: ${{ vars.DOCKERHUB_USERNAME }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         repository: ${{ vars.DOCKERHUB_USERNAME }}/python-torch
