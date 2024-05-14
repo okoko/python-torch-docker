@@ -18,6 +18,11 @@ on:
             type: boolean
             default: true
 
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
 jobs:
   build-pytorch-wheel:
     runs-on: [self-hosted, ARM64]
