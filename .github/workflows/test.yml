@@ -7,6 +7,9 @@ on:
 
 permissions: {}
 
+env:
+  TOP_ENV: test
+
 jobs:
   build-pytorch-wheel:
     runs-on: [self-hosted, ARM64]
