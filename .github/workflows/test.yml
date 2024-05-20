@@ -1,0 +1,14 @@
+name: Build PyTorch Wheel
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  build-pytorch-wheel:
+    runs-on: [self-hosted, ARM64]
+    steps:
+    - run: |
+        env | sort
+    - run: |
+        echo "${{ toJSON(env) }}"
