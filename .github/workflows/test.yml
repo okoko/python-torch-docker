@@ -14,7 +14,18 @@ jobs:
   build-pytorch-wheel:
     runs-on: [self-hosted, ARM64]
     steps:
-    - run: |
+    - name: shell environment
+      run: |
         env | sort
-    - run: |
+    - name: env context
+      run: |
         echo "${{ toJSON(env) }}"
+    - name: vars
+      run: |
+        echo "${{ toJSON(vars) }}"
+    - name: github
+      run: |
+        echo "${{ toJSON(github) }}"
+    - name: runner
+      run: |
+        echo "${{ toJSON(runner) }}"
