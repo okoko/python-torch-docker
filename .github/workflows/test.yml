@@ -29,3 +29,16 @@ jobs:
     - name: runner
       run: |
         echo "${{ toJSON(runner) }}"
+    - name: Discover cache path
+      # The runner .env file variables only shows in the shell environment,
+      # not in the env context.
+      run: |
+        [ -z "$CACHE_PATH" ] && CACHE_PATH=$(realpath "$RUNNER_TOOL_CACHE/../_cache")
+        echo "CACHE_PATH=$CACHE_PATH" >> "$GITHUB_ENV"
+        mkdir -p "$CACHE_PATH"
+    - name: Test it came into env context
+      env:
+        ENV_CACHE_PATH: ${{ env.CACHE_PATH }}
+      run: |
+        echo "CACHE_PATH=$CACHE_PATH"
+        echo "ENV_CACHE_PATH=$ENV_CACHE_PATH"
