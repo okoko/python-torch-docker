@@ -85,6 +85,6 @@ jobs:
       uses: actions/attest-build-provenance@v1
       if: ${{ inputs.push-to-registry }}
       with:
-        subject-name: ${{ vars.DOCKERHUB_USERNAME }}/torch-wheels
+        subject-name: index.docker.io/${{ vars.DOCKERHUB_USERNAME }}/torch-wheels
         subject-digest: ${{ steps.push.outputs.digest }}
         push-to-registry: true
