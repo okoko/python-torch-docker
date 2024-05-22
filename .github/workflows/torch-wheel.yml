@@ -62,7 +62,7 @@ jobs:
         file: ./torch-wheel.Dockerfile
         push: ${{ inputs.push-to-registry || false }}
         build-args: |
-          TORCH_BUILD_VERSION=${{ inputs.pytorch-version }}
+          PYTORCH_BUILD_VERSION=${{ inputs.pytorch-version }}
         tags: |
             ${{ vars.DOCKERHUB_USERNAME }}/torch-wheels:${{ inputs.pytorch-version }}
         labels: |
