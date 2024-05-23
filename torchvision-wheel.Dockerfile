@@ -1,7 +1,12 @@
 ARG TORCHVISION_VERSION=0.16
 ARG BASE_IMAGE=nvcr.io/nvidia/l4t-cuda:12.2.12-devel
 
-FROM ${BASE_IMAGE}
+
+# Builder stage for x86 wheel, just a dummy for now
+FROM scratch as amd64
+
+# Builder stage for arm64 wheel
+FROM ${BASE_IMAGE} as arm64
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -57,7 +62,7 @@ RUN cd /opt/torchvision && \
     export TORCH_CUDA_ARCH_LIST="7.2;8.7" && \
     export TORCHVISION_USE_PNG=1 && \
     export TORCHVISION_USE_JPEG=1 && \
-    python3  setup.py --verbose bdist_wheel --dist-dir /opt/torchvision/dist
+    python3  setup.py --verbose bdist_wheel --dist-dir /
 
 RUN pip3 install auditwheel
 
@@ -69,3 +74,12 @@ RUN cd /opt/torchvision/packaging/wheel/ && \
 WORKDIR /home
 
 # RUN pip3 install --no-cache-dir --verbose /opt/torchvision/dist/*.whl
+
+
+# Alias to copy files from in next stage
+FROM ${TARGETARCH} as wheels
+
+# We only want to store the wheel in the final image
+FROM scratch as wheel-container
+
+COPY --from=wheels /*.whl /
