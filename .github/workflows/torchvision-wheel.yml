@@ -45,7 +45,7 @@ jobs:
           TORCHVISION_VERSION=${{ inputs.torchvision-version }}
         # TODO add the latest tag, maybe somehow via docker/metadata-action
         tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/torch-wheels:${{ inputs.torchvision-version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/torchvision-wheels:${{ inputs.torchvision-version }}
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=torch-wheel
         cache-to: type=gha,scope=torch-wheel,mode=max
