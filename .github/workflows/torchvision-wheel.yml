@@ -1,4 +1,4 @@
-name: Build PyTorch Wheel
+name: Build Torchvision Wheel
 
 on:
   workflow_dispatch:
