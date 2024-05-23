@@ -6,6 +6,8 @@ on:
     paths-ignore:
     - 'torch-wheel.Dockerfile'
     - '.github/workflows/torch-wheel.yml'
+    - 'torchvision-wheel.Dockerfile'
+    - '.github/workflows/torchvision-wheel.yml'
   # We want to monthly update the base image for security
   # TODO Can we avoid building the same image?
   schedule:
