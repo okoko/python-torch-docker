@@ -51,7 +51,7 @@ ARG TORCHVISION_VERSION
 
 RUN git clone --branch release/${TORCHVISION_VERSION} --recursive --depth=1 https://github.com/pytorch/vision /opt/torchvision
 
-RUN git checkout ${TORCHVISION_VERSION}
+RUN git checkout release/${TORCHVISION_VERSION}
 
 RUN cd
 
