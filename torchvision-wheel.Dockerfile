@@ -1,4 +1,4 @@
-ARG TORCHVISION_VERSION=release/0.16
+ARG TORCHVISION_VERSION=0.16
 ARG BASE_IMAGE=nvcr.io/nvidia/l4t-cuda:12.2.12-devel
 
 FROM ${BASE_IMAGE}
@@ -44,7 +44,7 @@ WORKDIR /opt/torchvision
 
 ARG TORCHVISION_VERSION
 
-RUN git clone --branch ${TORCHVISION_VERSION} --recursive --depth=1 https://github.com/pytorch/vision /opt/torchvision
+RUN git clone --branch release/${TORCHVISION_VERSION} --recursive --depth=1 https://github.com/pytorch/vision /opt/torchvision
 
 RUN git checkout ${TORCHVISION_VERSION}
 

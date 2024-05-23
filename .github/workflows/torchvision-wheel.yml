@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
         torchvision-version:
-            description: 'Version (tag) of torchvision to build (e.g. release/0.16)'
+            description: 'Version of torchvision to build (e.g. 0.16)'
             required: true
-            default: 'release/0.16'
+            default: '0.16'
             type: string
         push-to-registry:
             description: 'Push image to registry'
