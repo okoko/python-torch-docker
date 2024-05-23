@@ -41,7 +41,7 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 
 RUN pip3 uninstall -y numpy && pip3 install numpy
 
-COPY torch-wheel/torch-*.whl /opt/
+COPY --from=opukka/torch-wheels:2.1.2 /torch-*.whl /opt/
 
 RUN pip3 install --verbose /opt/torch-*.whl
 
