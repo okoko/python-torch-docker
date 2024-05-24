@@ -69,6 +69,9 @@ RUN --mount=from=torch-wheel-image,src=/,target=/opt/ \
     pip3 install --no-cache-dir ${TORCH_INSTALL}
 NUR
 
+# TODO: debug, remove
+RUN pip3 freeze
+
 
 # RUN pip3 install --verbose /opt/torch-*.whl
 
@@ -76,11 +79,11 @@ WORKDIR /opt/torchvision
 
 ARG TORCHVISION_VERSION
 
-RUN git clone --branch release/${TORCHVISION_VERSION} --recursive --depth=1 https://github.com/pytorch/vision /opt/torchvision
+RUN git clone --branch "v${TORCHVISION_VERSION}" --recursive --depth=1 https://github.com/pytorch/vision /opt/torchvision
 
-RUN git checkout release/${TORCHVISION_VERSION}
+RUN git checkout "v${TORCHVISION_VERSION}"
 
-RUN cd
+# RUN cd
 
 # Both CUDA_HOME & TORCH_CUDA_ARCH_LIST are needed
 RUN cd /opt/torchvision && \
