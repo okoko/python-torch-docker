@@ -13,18 +13,18 @@ ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      libopenblas-dev \
-      libopenmpi-dev \
-            openmpi-bin \
-            openmpi-common \
-      gfortran \
-      libomp-dev \
-      git \
-      python3.11 \
+        libopenblas-dev \
+        libopenmpi-dev \
+        openmpi-bin \
+        openmpi-common \
+        gfortran \
+        libomp-dev \
+        git \
+        python3.11 \
         python3.11-dev \
-      libpng-dev \
-      libjpeg-turbo8-dev \
-      zlib1g-dev \
+        libpng-dev \
+        libjpeg-turbo8-dev \
+        zlib1g-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -39,6 +39,7 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
     update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.11 1 && \
     update-alternatives --set pip /usr/local/bin/pip3.11
 
+RUN pip3 uninstall -y setuptools && pip3 install setuptools==69.5.1
 RUN pip3 uninstall -y numpy && pip3 install numpy
 
 COPY --from=opukka/torch-wheels:2.1.2 /torch-*.whl /opt/

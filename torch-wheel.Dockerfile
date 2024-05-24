@@ -62,7 +62,6 @@ RUN --mount=type=cache,target=/opt/ccache \
     export USE_TENSORRT=0 && \
     export TORCH_CUDA_ARCH_LIST="7.2;8.7" && \
     export PYTHON_VERSION=3.11 && \
-    pip3 install setuptools && \
     pip3 install -r requirements.txt && \
     pip3 install --no-cache-dir scikit-build ninja && \
     python3 setup.py bdist_wheel && \
