@@ -27,12 +27,15 @@ jobs:
     strategy:
       matrix:
         include:
+        # Check torch + torchvision compatibility from https://github.com/pytorch/vision?tab=readme-ov-file#installation
         - torch: '2.1.2'
           torch-wheel-tag: '2.1.2'
+          torchvision: '0.16.2'
           python: '3.11.9'
           platforms: linux/amd64,linux/arm64
         - torch: '2.1.2'
           torch-wheel-tag: '2.1.2'
+          torchvision: '0.16.2'
           python: '3.11.9-slim'
           platforms: linux/amd64,linux/arm64
         - torch: '2.1.2+cpu'
@@ -74,6 +77,7 @@ jobs:
           TORCH=${{ matrix.torch }}
           TORCH_REQUIREMENT=${{ matrix.url || format('torch=={0}', matrix.torch) }}
           TORCH_WHEEL_SOURCE=${{ matrix.torch-wheel-tag && format('{0}/torch-wheels:{1}', vars.DOCKERHUB_USERNAME, matrix.torch-wheel-tag) || 'scratch'}}
+          TORCHVISION_WHEEL_SOURCE=${{ matrix.torchvision && format('{0}/torchvision-wheels:{1}', vars.DOCKERHUB_USERNAME, matrix.torchvision) || 'scratch'}}
           EXTRA_INDEX_URL=${{ matrix.extra-index-url }}
           ${{ matrix.constraints && format('CONSTRAINTS={0}', matrix.constraints) || '' }}
         # TODO add the latest tag, maybe somehow via docker/metadata-action
