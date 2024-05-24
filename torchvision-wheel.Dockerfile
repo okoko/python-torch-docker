@@ -51,8 +51,6 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 RUN pip3 uninstall -y setuptools && pip3 install setuptools==69.5.1
 RUN pip3 uninstall -y numpy && pip3 install numpy
 
-
-# COPY --from=torch-wheel-image /torch-*.whl /opt/
 ARG PYTORCH_VERSION
 
 # Install PyTorch dependency
@@ -67,13 +65,8 @@ RUN --mount=from=torch-wheel-image,src=/,target=/opt/ \
         TORCH_INSTALL="torch==${PYTORCH_VERSION}"
     fi
     pip3 install --no-cache-dir ${TORCH_INSTALL}
+    pip freeze
 NUR
-
-# TODO: debug, remove
-RUN pip3 freeze
-
-
-# RUN pip3 install --verbose /opt/torch-*.whl
 
 WORKDIR /opt/torchvision
 
@@ -82,8 +75,6 @@ ARG TORCHVISION_VERSION
 RUN git clone --branch "v${TORCHVISION_VERSION}" --recursive --depth=1 https://github.com/pytorch/vision /opt/torchvision
 
 RUN git checkout "v${TORCHVISION_VERSION}"
-
-# RUN cd
 
 # Both CUDA_HOME & TORCH_CUDA_ARCH_LIST are needed
 RUN cd /opt/torchvision && \
