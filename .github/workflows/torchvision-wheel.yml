@@ -6,7 +6,6 @@
 name: Build Torchvision Wheel
 
 on:
-  push:
   workflow_dispatch:
     inputs:
         torchvision-version:
