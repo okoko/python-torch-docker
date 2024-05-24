@@ -1,12 +1,22 @@
+# This requires
+# vars.DOCKERHUB_USERNAME for the result image account
+# secrets.DOCKERHUB_USERNAME for the account that pushes the image
+# secrets.DOCKERHUB_TOKEN for the account password that pushes the image
+
 name: Build Torchvision Wheel
 
 on:
   workflow_dispatch:
     inputs:
         torchvision-version:
-            description: 'Version of torchvision to build (e.g. 0.16)'
+            description: 'Version of torchvision to build (e.g. 0.16.2)'
             required: true
-            default: '0.16'
+            default: '0.16.2'
+            type: string
+        pytorch-version:
+            description: 'Torch version (check compatibility matrix)'
+            required: true
+            default: '2.1.2'
             type: string
         push-to-registry:
             description: 'Push image to registry'
@@ -43,9 +53,11 @@ jobs:
         push: ${{ inputs.push-to-registry }}
         build-args: |
           TORCHVISION_VERSION=${{ inputs.torchvision-version }}
+          TORCH_WHEEL_SOURCE=${{ vars.DOCKERHUB_USERNAME }}/torch-wheels:${{ inputs.pytorch-version }}
+          PYTORCH_VERSION=${{ inputs.pytorch-version }}
         # TODO add the latest tag, maybe somehow via docker/metadata-action
         tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/torchvision-wheels:${{ inputs.torchvision-version }}
+            ${{ vars.DOCKERHUB_USERNAME }}/torchvision-wheels:${{ inputs.torchvision-version }}
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=torch-wheel
         cache-to: type=gha,scope=torch-wheel,mode=max
