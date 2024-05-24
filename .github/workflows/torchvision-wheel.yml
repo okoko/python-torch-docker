@@ -25,10 +25,10 @@ on:
             type: boolean
             default: true
 
-permissions:
-  contents: read
-  id-token: write
-  attestations: write
+# permissions:
+#   contents: read
+#   id-token: write
+#   attestations: write
 
 jobs:
   build-torchvision-wheel:
@@ -53,14 +53,14 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Discover cache path
-      # A runner can have custom variables in .env file, but they show only in
-      # the shell environment, not in the env context. Detect and set in env
-      # context with a fallback to a default path next to tool cache.
-      run: |
-          [ -z "$CACHE_PATH" ] && CACHE_PATH=$(realpath "$RUNNER_TOOL_CACHE/../_cache")
-          echo "CACHE_PATH=$CACHE_PATH" >> "$GITHUB_ENV"
-          mkdir -p "$CACHE_PATH"
+    # - name: Discover cache path
+    #   # A runner can have custom variables in .env file, but they show only in
+    #   # the shell environment, not in the env context. Detect and set in env
+    #   # context with a fallback to a default path next to tool cache.
+    #   run: |
+    #       [ -z "$CACHE_PATH" ] && CACHE_PATH=$(realpath "$RUNNER_TOOL_CACHE/../_cache")
+    #       echo "CACHE_PATH=$CACHE_PATH" >> "$GITHUB_ENV"
+    #       mkdir -p "$CACHE_PATH"
 
     - uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
       id: push
@@ -79,21 +79,21 @@ jobs:
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.version=${{ inputs.pytorch-version }}
         platforms: linux/amd64,linux/arm64
-        cache-from: type=local,src=${{ env.CACHE_PATH }}/torchvision-wheel
-        cache-to: type=local,dest=${{ env.CACHE_PATH }}/torchvision-wheel-new,mode=max
+        # cache-from: type=local,src=${{ env.CACHE_PATH }}/torchvision-wheel
+        # cache-to: type=local,dest=${{ env.CACHE_PATH }}/torchvision-wheel-new,mode=max
 
-    - # Temp fix
-      # https://github.com/docker/build-push-action/issues/252
-      # https://github.com/moby/buildkit/issues/1896
-      name: Move cache
-      run: |
-        rm -rf ${{ env.CACHE_PATH }}/torchvision-wheel
-        mv ${{ env.CACHE_PATH }}/torchvision-wheel-new ${{ env.CACHE_PATH }}/torchvision-wheel
+    # - # Temp fix
+    #   # https://github.com/docker/build-push-action/issues/252
+    #   # https://github.com/moby/buildkit/issues/1896
+    #   name: Move cache
+    #   run: |
+    #     rm -rf ${{ env.CACHE_PATH }}/torchvision-wheel
+    #     mv ${{ env.CACHE_PATH }}/torchvision-wheel-new ${{ env.CACHE_PATH }}/torchvision-wheel
   
-    - name: Attest
-      uses: actions/attest-build-provenance@v1
-      if: ${{ inputs.push-to-registry }}
-      with:
-        subject-name: index.docker.io/${{ vars.DOCKERHUB_USERNAME }}/torchvision-wheels
-        subject-digest: ${{ steps.push.outputs.digest }}
-        push-to-registry: true
+    # - name: Attest
+    #   uses: actions/attest-build-provenance@v1
+    #   if: ${{ inputs.push-to-registry }}
+    #   with:
+    #     subject-name: index.docker.io/${{ vars.DOCKERHUB_USERNAME }}/torchvision-wheels
+    #     subject-digest: ${{ steps.push.outputs.digest }}
+    #     push-to-registry: true
