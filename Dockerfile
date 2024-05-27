@@ -5,12 +5,14 @@ ARG TORCH=2.1.2
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
 ARG EXTRA_INDEX_URL
 ARG TORCH_WHEEL_SOURCE="scratch"
+ARG TORCHVISION_WHEEL_SOURCE="scratch"
 ARG CREATED
 ARG SOURCE_COMMIT
 ARG CONSTRAINTS=constraints.txt
 
 # Using variable in RUN --mount=from gives error 'from' doesn't support variable expansion, define alias stage instead
-FROM ${TORCH_WHEEL_SOURCE} as wheel-image
+FROM ${TORCH_WHEEL_SOURCE} AS torch-wheel-image
+FROM ${TORCHVISION_WHEEL_SOURCE} AS torchvision-wheel-image
 
 
 FROM python:${PYTHON}
@@ -43,20 +45,29 @@ ARG CONSTRAINTS
 ARG TORCH_REQUIREMENT
 ARG EXTRA_INDEX_URL
 RUN --mount=src=${CONSTRAINTS},target=/tmp/constraints.txt \
-    --mount=from=wheel-image,src=/,target=/tmp/torch-wheels \
+    --mount=from=torch-wheel-image,src=/,target=/tmp/torch-wheels \
+    --mount=from=torchvision-wheel-image,src=/,target=/tmp/torchvision-wheels \
     <<NUR
     set -ex
-    # If any wheel files exist, install from those, otherwise install from PyPi
+    # If any torch wheel files exist, install from those, otherwise install from PyPi
     if ls /tmp/torch-wheels/*.whl 1> /dev/null 2>&1
     then
         TORCH_INSTALL="/tmp/torch-wheels/*.whl"
     else
         TORCH_INSTALL=${TORCH_REQUIREMENT}
     fi
+    # If any torchvision wheel files exist, install them
+    if ls /tmp/torchvision-wheels/*.whl 1> /dev/null 2>&1
+    then
+        TORCHVISION_INSTALL="/tmp/torchvision-wheels/*.whl"
+    else
+        TORCHVISION_INSTALL=""
+    fi
+
     pip install --no-cache-dir \
         -c /tmp/constraints.txt \
         ${EXTRA_INDEX_URL:+--extra-index-url ${EXTRA_INDEX_URL}} \
-        ${TORCH_INSTALL}
+        ${TORCH_INSTALL} ${TORCHVISION_INSTALL}
 NUR
 
 # nvidia-docker plugin uses these environment variables to provide services
