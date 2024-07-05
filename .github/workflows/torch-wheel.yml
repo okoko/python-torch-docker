@@ -29,7 +29,7 @@ jobs:
     timeout-minutes: 1439  # GITHUB_TOKEN expires in 24 hours, so keep it just below that
     steps:
     - name: Print Inputs
-      run: echo "${{ toJSON(github.event.inputs) }}"
+      run: echo "${{ toJSON(inputs) }}"
 
     - id: created
       run: echo "created=$(date --utc +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
