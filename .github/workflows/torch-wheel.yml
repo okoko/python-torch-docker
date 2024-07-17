@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
     inputs:
         pytorch-version:
-            description: 'Version of pytorch to build (e.g. 2.1.2)'
+            description: 'Version of pytorch to build (e.g. 2.3.1)'
             required: true
-            default: '2.1.2'
+            default: '2.3.1'
             type: string
         push-to-registry:
             description: 'Push image to registry'

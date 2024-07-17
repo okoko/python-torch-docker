@@ -1,4 +1,4 @@
-ARG PYTORCH_BUILD_VERSION=2.1.2
+ARG PYTORCH_BUILD_VERSION=2.3.1
 ARG BASE_IMAGE=nvcr.io/nvidia/l4t-cuda:12.2.12-devel
 
 # Builder stage for x86 wheel, just a dummy for now
