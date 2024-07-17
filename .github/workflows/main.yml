@@ -33,16 +33,19 @@ jobs:
           torchvision: '0.16.2'
           python: '3.11.9'
           platforms: linux/amd64,linux/arm64
+          constraints: constraints.txt
         - torch: '2.1.2'
           torch-wheel-tag: '2.1.2'
           torchvision: '0.16.2'
           python: '3.11.9-slim'
           platforms: linux/amd64,linux/arm64
+          constraints: constraints.txt
         - torch: '2.1.2+cpu'
           torch-wheel-tag: '2.1.2'
           python: '3.11.9'
           extra-index-url: 'https://download.pytorch.org/whl/cpu'
           platforms: linux/amd64
+          constraints: constraints.txt
 
         - torch: '2.3.1'
           torch-wheel-tag: '2.3.1'
