@@ -8,7 +8,7 @@ ARG TORCH_WHEEL_SOURCE="scratch"
 ARG TORCHVISION_WHEEL_SOURCE="scratch"
 ARG CREATED
 ARG SOURCE_COMMIT
-ARG CONSTRAINTS=constraints.txt
+ARG CONSTRAINTS=constraints-2.3.1.txt
 
 # Using variable in RUN --mount=from gives error 'from' doesn't support variable expansion, define alias stage instead
 FROM ${TORCH_WHEEL_SOURCE} AS torch-wheel-image
