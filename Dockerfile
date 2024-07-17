@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.4
+# syntax=docker/dockerfile:1
 
 ARG PYTHON=3.11.9
 ARG TORCH=2.3.1
