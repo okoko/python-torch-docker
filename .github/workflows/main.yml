@@ -28,40 +28,28 @@ jobs:
       matrix:
         include:
         # Check torch + torchvision compatibility from https://github.com/pytorch/vision?tab=readme-ov-file#installation
-        - torch: '2.1.2'
-          torch-wheel-tag: '2.1.2'
-          torchvision: '0.16.2'
-          python: '3.11.9'
-          platforms: linux/amd64,linux/arm64
-          constraints: constraints.txt
-        - torch: '2.1.2'
-          torch-wheel-tag: '2.1.2'
-          torchvision: '0.16.2'
+        - torch: '2.3.1'
+          torch-wheel-tag: '2.3.1'
+          torchvision: '0.18.1'
           python: '3.11.9-slim'
           platforms: linux/amd64,linux/arm64
-          constraints: constraints.txt
-        - torch: '2.1.2+cpu'
-          torch-wheel-tag: '2.1.2'
-          python: '3.11.9'
-          extra-index-url: 'https://download.pytorch.org/whl/cpu'
-          platforms: linux/amd64
-          constraints: constraints.txt
+          constraints: constraints-2.3.1.txt
 
         - torch: '2.3.1'
           torch-wheel-tag: '2.3.1'
           torchvision: '0.18.1'
-          python: '3.11.9'
+          python: '3.11.10'
           platforms: linux/amd64,linux/arm64
           constraints: constraints-2.3.1.txt
         - torch: '2.3.1'
           torch-wheel-tag: '2.3.1'
           torchvision: '0.18.1'
-          python: '3.11.9-slim'
+          python: '3.11.10-slim'
           platforms: linux/amd64,linux/arm64
           constraints: constraints-2.3.1.txt
         - torch: '2.3.1+cpu'
           torch-wheel-tag: '2.3.1'
-          python: '3.11.9'
+          python: '3.11.10'
           extra-index-url: 'https://download.pytorch.org/whl/cpu'
           platforms: linux/amd64
           constraints: constraints-2.3.1.txt
