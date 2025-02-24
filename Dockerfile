@@ -18,8 +18,8 @@ FROM ${TORCHVISION_WHEEL_SOURCE} AS torchvision-wheel-image
 FROM python:${PYTHON}
 
 ARG TARGETPLATFORM
-RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=bookworm-/var/lib/apt \
+RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt-${TARGETPLATFORM} \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=bookworm-/var/lib/apt-${TARGETPLATFORM} \
     <<NUR
     set -ex
 # To keep cache of downloaded .debs, replace docker configuration
