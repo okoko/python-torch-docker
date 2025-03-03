@@ -82,7 +82,7 @@ jobs:
         mv ${{ env.CACHE_PATH }}/torch-wheel-new ${{ env.CACHE_PATH }}/torch-wheel
 
     - name: Attest
-      uses: actions/attest-build-provenance@v1
+      uses: actions/attest-build-provenance@v2
       if: ${{ inputs.push-to-registry }}
       with:
         subject-name: index.docker.io/${{ vars.DOCKERHUB_USERNAME }}/torch-wheels
