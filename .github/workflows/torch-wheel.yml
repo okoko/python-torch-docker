@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
     inputs:
         pytorch-version:
-            description: 'Version of pytorch to build (e.g. 2.3.1)'
+            description: 'Version of pytorch to build (e.g. 2.7.0)'
             required: true
-            default: '2.3.1'
+            default: '2.7.0'
             type: string
         push-to-registry:
             description: 'Push image to registry'
@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   build-pytorch-wheel:
-    runs-on: [self-hosted, ARM64]
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 1439  # GITHUB_TOKEN expires in 24 hours, so keep it just below that
     steps:
     - name: Print Inputs

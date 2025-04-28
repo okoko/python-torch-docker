@@ -1,4 +1,5 @@
-ARG PYTORCH_BUILD_VERSION=2.3.1
+ARG PYTORCH_BUILD_VERSION=2.7.0
+# https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-cuda/tags
 ARG BASE_IMAGE=nvcr.io/nvidia/l4t-cuda:12.2.12-devel
 
 # Builder stage for x86 wheel, just a dummy for now

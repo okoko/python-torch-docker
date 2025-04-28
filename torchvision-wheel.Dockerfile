@@ -1,7 +1,8 @@
 # Compatibility matrix for torch+torchvision: https://github.com/pytorch/vision
-ARG TORCHVISION_VERSION=0.18.1
-ARG PYTORCH_VERSION=2.3.1
+ARG TORCHVISION_VERSION=0.22.0
+ARG PYTORCH_VERSION=2.7.0
 ARG TORCH_WHEEL_SOURCE="scratch"
+# https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-cuda/tags
 ARG ARM_BASE_IMAGE=nvcr.io/nvidia/l4t-cuda:12.2.12-devel
 
 
