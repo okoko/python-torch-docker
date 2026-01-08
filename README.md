@@ -16,6 +16,11 @@ packages. To know the packages already installed, run
 
 The output can be used as content of `--constraint` file to `pip-compile`.
 
+The torch builds for +cuNNN are installed from package index
+<https://download.pytorch.org/whl/cuNNN/>. This same index needs to be used to
+install `torchvision`. It is not included in the image because it is fairly
+small and has dependencies we rather maintain in the images build on this.
+
 # License
 
 The image build is licensed using BSD-3, but the underlying Debian, Python,

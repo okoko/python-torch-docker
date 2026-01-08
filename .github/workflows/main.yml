@@ -62,7 +62,7 @@ jobs:
       # Tags have limited set of valid character, '+' not included
       # https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests
       run: |
-        echo "tag=$(echo -n "${{ matrix.torch }}${{ matrix.index && format('+{0}', matrix.index) || '' }}-${{ matrix.python }}" | tr -c 'a-zA-Z0-9._-' '[-*]')" >> $GITHUB_OUTPUT
+        echo "tag=$(echo -n "${{ matrix.torch }}${{ matrix.index && format('-{0}', matrix.index) || '' }}-${{ matrix.python }}" | tr -c 'a-zA-Z0-9._-' '[-*]')" >> $GITHUB_OUTPUT
 
     - uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
       with:
