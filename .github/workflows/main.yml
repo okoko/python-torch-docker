@@ -138,6 +138,7 @@ jobs:
         echo "digest=$DIGEST" >> $GITHUB_OUTPUT
       env:
         DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+        GH_TOKEN: ${{ github.token }}
 
     - name: Create attestation for the manifest
       uses: actions/attest-build-provenance@v3
