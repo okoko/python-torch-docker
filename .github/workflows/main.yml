@@ -15,9 +15,6 @@ on:
     - cron: '42 3 2 * *'
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   build:
     runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
@@ -33,7 +30,7 @@ jobs:
         - index: cpu
           python: '3.14.2-slim'
     permissions:
-      contents: read
+      contents: write  # For the tag creation on cpu images
       id-token: write  # Needed for actions/attest-build-provenance build predicate
       attestations: write  # Needed for actions/attest-build-provenance attestation upload to repository
       artifact-metadata: write # Needed for actions/attest-build-provenance artifact metadata storage records
@@ -92,6 +89,35 @@ jobs:
         subject-digest: ${{ steps.build-push.outputs.digest }}
         push-to-registry: true
 
+    # With org.opencontainers.image.source pointing to this repository Dockerfile FROM updates in pull requests can be scanned
+    # if the commits have matching tags with the image.
+    # https://github.blog/changelog/2023-04-13-dependabot-now-supports-fetching-release-notes-and-changelogs-for-docker-images/
+    # https://octokit.github.io/rest.js/v19#git-create-ref
+    # https://octokit.github.io/rest.js/v19#git-update-ref
+    - name: Tag the commit or update tag
+      if: github.ref == 'refs/heads/main' && matrix.index == 'cpu'
+      uses: actions/github-script@v8
+      with:
+        script: |
+          try {
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ steps.build-tag.outputs.tag }}',
+              sha: context.sha,
+            });
+          } catch(e) {
+            if (e.status === 422) {
+              await github.rest.git.updateRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'tags/${{ steps.build-tag.outputs.tag }}',
+                sha: context.sha,
+                force: true,
+              });
+            }
+          }
+
   merge:
     needs: build
     runs-on: ubuntu-latest
@@ -101,6 +127,7 @@ jobs:
         python: ['3.14.2', '3.14.2-slim']
         index: [cu126]
     permissions:
+      contents: write  # For the tag creation
       id-token: write  # Needed for actions/attest-build-provenance build predicate
       attestations: write  # Needed for actions/attest-build-provenance attestation upload to repository
       artifact-metadata: write # Needed for actions/attest-build-provenance artifact metadata storage records
@@ -149,14 +176,6 @@ jobs:
         subject-digest: ${{ steps.manifest.outputs.digest }}
         push-to-registry: true
 
-  description:
-    needs: merge
-    # https://github.com/actions/runner-images/blob/main/images/ubuntu-slim/ubuntu-slim-Readme.md
-    runs-on: ubuntu-slim
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      contents: write  # For the tag creation
-    steps:
     # With org.opencontainers.image.source pointing to this repository Dockerfile FROM updates in pull requests can be scanned
     # if the commits have matching tags with the image.
     # https://github.blog/changelog/2023-04-13-dependabot-now-supports-fetching-release-notes-and-changelogs-for-docker-images/
@@ -171,7 +190,7 @@ jobs:
             await github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'refs/tags/${{ steps.build-tag.outputs.tag }}',
+              ref: 'refs/tags/${{ steps.manifest.outputs.tag }}',
               sha: context.sha,
             });
           } catch(e) {
@@ -179,14 +198,24 @@ jobs:
               await github.rest.git.updateRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                ref: 'tags/${{ steps.build-tag.outputs.tag }}',
+                ref: 'tags/${{ steps.manifest.outputs.tag }}',
                 sha: context.sha,
                 force: true,
               });
             }
           }
 
-      # Can not use Personal Access Token to update the README. Returns FORBIDDEN.
+  description:
+    needs: merge
+    # https://github.com/actions/runner-images/blob/main/images/ubuntu-slim/ubuntu-slim-Readme.md
+    runs-on: ubuntu-slim
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read  # To checkout the README.md
+    steps:
+    - uses: actions/checkout@v6
+
+    # Can not use Personal Access Token to update the README. Returns FORBIDDEN.
     - name: Docker Hub Description
       uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5.0.0
       with:
