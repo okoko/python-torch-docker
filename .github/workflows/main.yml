@@ -121,21 +121,23 @@ jobs:
         echo "repository=$repository" >> $GITHUB_OUTPUT
         name="$repository:$tag"
         echo "name=$name" >> $GITHUB_OUTPUT
-        docker buildx imagetools create \
-          --tag $name \
-          $name-amd64 \
-          $name-arm64
-        # Unfortunately we don't get the digest directly so we need to query it risking it get changed
-        DIGEST=$(docker buildx imagetools inspect "$name" --format '{{ print .Manifest.Digest }}')
-        # Ensure the images bundled behind the digest about to be attested still have valid attestations
-        for digest in $(docker buildx imagetools inspect "$repository@$DIGEST" --format '{{ range .Manifest.Manifests }}{{ .Digest }} {{ end }}')
-        do
-          gh attestation verify oci://$repository@$digest \
+        verify() {
+          gh attestation verify oci://$repository@$1 \
             --repo $GITHUB_REPOSITORY \
             --signer-workflow $GITHUB_WORKFLOW_REF \
             --source-digest $GITHUB_SHA
-        done
-        echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+        }
+        amd64_digest=$(docker buildx imagetools inspect "$name-amd64" --format '{{ print .Manifest.Digest }}')
+        verify $amd64_digest
+        arm64_digest=$(docker buildx imagetools inspect "$name-arm64" --format '{{ print .Manifest.Digest }}')
+        verify $arm64_digest
+        docker buildx imagetools create \
+          --tag $name \
+          $repository@$amd64_digest \
+          $repository@$arm64_digest 2>&1 | tee $RUNNER_TEMP/create_output.txt
+        # Would be too easy, if create output the digest to stdout directly
+        digest=$(sed -ne 's/.*pushing \(sha256:[a-f0-9]\+\).*/\1/p' $RUNNER_TEMP/create_output.txt)
+        echo "digest=$digest" >> $GITHUB_OUTPUT
       env:
         DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
         GH_TOKEN: ${{ github.token }}
