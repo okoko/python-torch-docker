@@ -88,7 +88,7 @@ jobs:
     - name: Create attestation for the image
       uses: actions/attest-build-provenance@v3
       with:
-        subject-name: docker.io/${{ vars.DOCKERHUB_USERNAME }}/python-torch:${{ steps.build-tag.outputs.tag }}
+        subject-name: docker.io/${{ vars.DOCKERHUB_USERNAME }}/python-torch
         subject-digest: ${{ steps.build-push.outputs.digest }}
         push-to-registry: true
 
@@ -116,16 +116,17 @@ jobs:
       run: |
         # This must match the build job tag generation
         tag="$(echo -n "${{ matrix.torch }}${{ matrix.index && format('-{0}', matrix.index) || '' }}-${{ matrix.python }}" | tr -c 'a-zA-Z0-9._-' '[-*]')"
-        echo "tag=${tag}" >> $GITHUB_OUTPUT
+        echo "tag=$tag" >> $GITHUB_OUTPUT
         repository="docker.io/$DOCKERHUB_USERNAME/python-torch"
+        echo "repository=$repository" >> $GITHUB_OUTPUT
         name="$repository:$tag"
-        echo "name=${name}" >> $GITHUB_OUTPUT
+        echo "name=$name" >> $GITHUB_OUTPUT
         docker buildx imagetools create \
           --tag $name \
-          ${name}-amd64 \
-          ${name}-arm64
+          $name-amd64 \
+          $name-arm64
         # Unfortunately we don't get the digest directly so we need to query it risking it get changed
-        DIGEST=$(docker buildx imagetools inspect "${name}" --format '{{ print .Manifest.Digest }}')
+        DIGEST=$(docker buildx imagetools inspect "$name" --format '{{ print .Manifest.Digest }}')
         # Ensure the images bundled behind the digest about to be attested still have valid attestations
         for digest in $(docker buildx imagetools inspect "$repository@$DIGEST" --format '{{ range .Manifest.Manifests }}{{ .Digest }} {{ end }}')
         do
@@ -134,14 +135,14 @@ jobs:
             --signer-workflow $GITHUB_WORKFLOW_REF \
             --source-digest $GITHUB_SHA
         done
-        echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+        echo "digest=$DIGEST" >> $GITHUB_OUTPUT
       env:
         DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
 
     - name: Create attestation for the manifest
       uses: actions/attest-build-provenance@v3
       with:
-        subject-name: ${{ steps.manifest.outputs.name }}
+        subject-name: ${{ steps.manifest.outputs.repository }}
         subject-digest: ${{ steps.manifest.outputs.digest }}
         push-to-registry: true
 
