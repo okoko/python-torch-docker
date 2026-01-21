@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1
 
-ARG PYTHON=3.11.10
-ARG TORCH=2.3.1
+ARG PYTHON=3.14.2
+ARG TORCH=2.9.1
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
-ARG EXTRA_INDEX_URL
+ARG EXTRA_INDEX_URL="https://download.pytorch.org/whl/cu126/"
 ARG TORCH_WHEEL_SOURCE="scratch"
 ARG TORCHVISION_WHEEL_SOURCE="scratch"
 ARG CREATED
 ARG SOURCE_COMMIT
-ARG CONSTRAINTS=constraints-2.3.1.txt
+ARG CONSTRAINTS=constraints-2.9.1.txt
 
 # Using variable in RUN --mount=from gives error 'from' doesn't support variable expansion, define alias stage instead
 FROM ${TORCH_WHEEL_SOURCE} AS torch-wheel-image
@@ -18,8 +18,8 @@ FROM ${TORCHVISION_WHEEL_SOURCE} AS torchvision-wheel-image
 FROM python:${PYTHON}
 
 ARG TARGETPLATFORM
-RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt-${TARGETPLATFORM} \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=bookworm-/var/lib/apt-${TARGETPLATFORM} \
+RUN --mount=type=cache,target=/var/cache/apt,id=trixie-/var/cache/apt-${TARGETPLATFORM} \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=trixie-/var/lib/apt-${TARGETPLATFORM} \
     <<NUR
     set -ex
 # To keep cache of downloaded .debs, replace docker configuration
@@ -28,15 +28,6 @@ RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt-${TARGET
     apt-get update
     DEBIAN_FRONTEND=noninteractive \
     apt-get upgrade -y --no-install-recommends
-
-    case ${TARGETPLATFORM} in
-        # Extra dependencies needed to run pytorch on Jetson
-        # Retreived from: https://github.com/dusty-nv/jetson-containers/blob/master/packages/pytorch/Dockerfile
-        "linux/arm64")
-            DEBIAN_FRONTEND=noninteractive \
-            apt-get install -y libopenblas-dev libopenmpi-dev openmpi-common openmpi-bin gfortran libomp-dev
-        ;;
-    esac
 NUR
 
 COPY README.md LICENSE /
