@@ -9,14 +9,14 @@ on:
   workflow_dispatch:
     inputs:
         torchvision-version:
-            description: 'Version of torchvision to build (e.g. 0.22.0)'
+            description: 'Version of torchvision to build (e.g. 0.25.0)'
             required: true
-            default: '0.22.0'
+            default: '0.25.0'
             type: string
         pytorch-version:
             description: 'Torch version (check compatibility matrix)'
             required: true
-            default: '2.7.0'
+            default: '2.10.0'
             type: string
         push-to-registry:
             description: 'Push image to registry'
