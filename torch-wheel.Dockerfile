@@ -42,7 +42,7 @@ FROM --platform=linux/arm64 base AS tooling-arm64
 # JP 6.2.1 L4T 36.4.7
 # https://repo.download.nvidia.com/jetson/#Jetpack%206.1/6.2/6.2.1
 # https://docs.nvidia.com/jetson/jetpack/install-setup/index.html
-ADD https://repo.download.nvidia.com/jetson/jetson-ota-public.asc /etc/apt/keyrings/jetson-ota-public.asc
+ADD --chmod=644 https://repo.download.nvidia.com/jetson/jetson-ota-public.asc /etc/apt/keyrings/jetson-ota-public.asc
 ADD https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/arm64/cuda-keyring_1.1-1_all.deb /
 RUN <<NUR
     echo "576f852981855e5c6cfb9b625ffb51b984ca451f1181b2e70435b005034fad55  /etc/apt/keyrings/jetson-ota-public.asc" | sha256sum -c -

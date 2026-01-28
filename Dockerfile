@@ -20,14 +20,28 @@ FROM python:${PYTHON}
 ARG TARGETPLATFORM
 RUN --mount=type=cache,target=/var/cache/apt,id=trixie-/var/cache/apt-${TARGETPLATFORM} \
     --mount=type=cache,target=/var/lib/apt,sharing=locked,id=trixie-/var/lib/apt-${TARGETPLATFORM} \
+    --mount=from=torch-wheel-image,src=/,target=/tmp/torch-wheels \
     <<NUR
     set -ex
 # To keep cache of downloaded .debs, replace docker configuration
     rm -f /etc/apt/apt.conf.d/docker-clean
     echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
     apt-get update
-    DEBIAN_FRONTEND=noninteractive \
+    export DEBIAN_FRONTEND=noninteractive
     apt-get upgrade -y --no-install-recommends
+    if ls /tmp/torch-wheels/*.whl 1> /dev/null 2>&1
+    then
+        apt-get install -y --no-install-recommends \
+            cuda-cudart-12-6 \
+            cuda-cupti-12-6 \
+            libcublas-12-6 \
+            libcudnn9-cuda-12 \
+            libcufft-12-6 \
+            libcufile-12-6 \
+            libcurand-12-6 \
+            libcusparse-12-6 \
+            libnvjitlink-12-6
+    fi
 NUR
 
 COPY README.md LICENSE /
