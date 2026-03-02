@@ -83,7 +83,7 @@ jobs:
         platforms: ${{ matrix.platform }}
 
     - name: Create attestation for the image
-      uses: actions/attest-build-provenance@v3
+      uses: actions/attest-build-provenance@v4
       with:
         subject-name: docker.io/${{ vars.DOCKERHUB_USERNAME }}/python-torch
         subject-digest: ${{ steps.build-push.outputs.digest }}
@@ -170,7 +170,7 @@ jobs:
         GH_TOKEN: ${{ github.token }}
 
     - name: Create attestation for the manifest
-      uses: actions/attest-build-provenance@v3
+      uses: actions/attest-build-provenance@v4
       with:
         subject-name: ${{ steps.manifest.outputs.repository }}
         subject-digest: ${{ steps.manifest.outputs.digest }}
