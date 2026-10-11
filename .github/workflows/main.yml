@@ -20,20 +20,17 @@ jobs:
     runs-on: ${{ case(matrix.platform == 'linux/arm64', 'ubuntu-24.04-arm', 'ubuntu-24.04') }}
     strategy:
       matrix:
-        torch: ['2.9.1']
-        python: ['3.14.2', '3.14.2-slim']
+        torch: ['2.3.1']
+        python: ['3.11.17', '3.11.17-slim']
         index: [cu126,cpu]
         platform: [linux/amd64, linux/arm64]
         exclude:
         - index: cpu
           platform: linux/arm64
         - index: cpu
-          python: '3.14.2-slim'
+          python: '3.11.17-slim'
     permissions:
-      contents: write  # For the tag creation on cpu images
-      id-token: write  # Needed for actions/attest-build-provenance build predicate
-      attestations: write  # Needed for actions/attest-build-provenance attestation upload to repository
-      artifact-metadata: write # Needed for actions/attest-build-provenance artifact metadata storage records
+      contents: read  # For the tag creation on cpu images
     steps:
     - id: created
       run: echo "created=$(date --utc +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
@@ -50,20 +47,10 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build Tag
-      id: build-tag
-      # Tags have limited set of valid character, '+' not included
-      # https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests
-      run: |
-        echo "tag=$(echo -n "${{ matrix.torch }}${{ case(matrix.index, format('-{0}', matrix.index), '') }}-${{ matrix.python }}${PLATFORM:+-}${PLATFORM#*/}" | tr -c 'a-zA-Z0-9._-' '[-*]')" >> $GITHUB_OUTPUT
-      env:
-        PLATFORM: ${{ case(matrix.index != 'cpu', matrix.platform, '') }}
-
     - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
       id: build-push
       with:
         context: .
-        push: ${{ github.ref == 'refs/heads/main' }}
         build-args: |
           CREATED=${{ steps.created.outputs.created }}
           SOURCE_COMMIT=${{ github.sha }}
@@ -74,64 +61,49 @@ jobs:
           TORCHVISION_WHEEL_SOURCE=${{ case(matrix.torchvision, format('{0}/torchvision-wheels:{1}', vars.DOCKERHUB_USERNAME, matrix.torchvision), 'scratch') }}
           EXTRA_INDEX_URL=${{ matrix.extra-index-url || format('https://download.pytorch.org/whl/{0}/', matrix.index) }}
           CONSTRAINTS=constraints-${{ matrix.torch }}.txt
-        # TODO add the latest tag, maybe somehow via docker/metadata-action
-        tags: |
-          ${{ vars.DOCKERHUB_USERNAME }}/python-torch:${{ steps.build-tag.outputs.tag }}
+        outputs: |
+          type=image,dangling-name-prefix=${{ vars.DOCKERHUB_USERNAME }}/python-torch,push=true
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
         cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }},mode=max
         platforms: ${{ matrix.platform }}
 
-    - name: Create attestation for the image
-      uses: actions/attest-build-provenance@v3
-      with:
-        subject-name: docker.io/${{ vars.DOCKERHUB_USERNAME }}/python-torch
-        subject-digest: ${{ steps.build-push.outputs.digest }}
-        push-to-registry: true
+    - name: Write the image digest for artifact
+      id: write-image-digest
+      # Tags have limited set of valid character, '+' not included
+      # https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests
+      run: |
+        MATRIX="${{ matrix.torch }},${{ matrix.index || '' }},${{ matrix.python }},${PLATFORM#*/}"
+        echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+        echo "Image digest for $MATRIX $DIGEST" >> $GITHUB_STEP_SUMMARY
+        FILENAME=$RUNNER_TEMP/image-digest-$MATRIX.txt
+        echo "$DIGEST" >> $FILENAME
+        echo "filename=$FILENAME" >> $GITHUB_OUTPUT
+      env:
+        DIGEST: ${{ steps.build-push.outputs.digest }}
+        PLATFORM: ${{ case(matrix.index != 'cpu', matrix.platform, '') }}
 
-    # With org.opencontainers.image.source pointing to this repository Dockerfile FROM updates in pull requests can be scanned
-    # if the commits have matching tags with the image.
-    # https://github.blog/changelog/2023-04-13-dependabot-now-supports-fetching-release-notes-and-changelogs-for-docker-images/
-    # https://octokit.github.io/rest.js/v19#git-create-ref
-    # https://octokit.github.io/rest.js/v19#git-update-ref
-    - name: Tag the commit or update tag
-      if: github.ref == 'refs/heads/main' && matrix.index == 'cpu'
-      uses: actions/github-script@v8
+    - name: Save the image digest as artifact
+      uses: actions/upload-artifact@v7
       with:
-        script: |
-          try {
-            await github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/${{ steps.build-tag.outputs.tag }}',
-              sha: context.sha,
-            });
-          } catch(e) {
-            if (e.status === 422) {
-              await github.rest.git.updateRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'tags/${{ steps.build-tag.outputs.tag }}',
-                sha: context.sha,
-                force: true,
-              });
-            }
-          }
+        name: image-digest-${{ steps.write-image-digest.outputs.matrix }}
+        path: ${{ steps.write-image-digest.outputs.filename }}
+        retention-days: 1
 
   merge:
     needs: build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        torch: ['2.9.1']
-        python: ['3.14.2', '3.14.2-slim']
-        index: [cu126]
     permissions:
       contents: write  # For the tag creation
       id-token: write  # Needed for actions/attest-build-provenance build predicate
       attestations: write  # Needed for actions/attest-build-provenance attestation upload to repository
       artifact-metadata: write # Needed for actions/attest-build-provenance artifact metadata storage records
     steps:
+    - name: Download the image digest artifact
+      uses: actions/download-artifact@v8
+      with:
+        pattern: image-digest-*
+        merge-multiple: true
     - name: Login to Docker Hub
       uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
       with:
@@ -141,27 +113,62 @@ jobs:
     - name: Merge platform images using manifest tool
       id: manifest
       run: |
-        # This must match the build job tag generation
-        tag="$(echo -n "${{ matrix.torch }}${{ case(matrix.index, format('-{0}', matrix.index), '') }}-${{ matrix.python }}" | tr -c 'a-zA-Z0-9._-' '[-*]')"
-        echo "tag=$tag" >> $GITHUB_OUTPUT
         repository="docker.io/$DOCKERHUB_USERNAME/python-torch"
         echo "repository=$repository" >> $GITHUB_OUTPUT
-        name="$repository:$tag"
+        subject_checksums=
+        for d in image-digest-*
+        do
+          matrix=${d#image-digest-}
+          echo "${matrix%,*}"
+        done | uniq |
+        while read image
+        do
+          archs=
+          multiple=false
+          digests=
+          for d in image-digest-$image,*
+          do
+            arch="${d##*,}"
+            if [ -n "$archs" ]
+            then
+              multiple=true
+              archs="$archs $arch"
+            else
+              archs="$arch"
+            fi
+            digests="$digests $(cat "$d")"
+          done
+          IFS=',' read torch index python <<< "$image"
+          tag="$(echo -n "${torch}${index:+-$index}-$python" | tr -c 'a-zA-Z0-9._-' '[-*]')"
+          name="$repository:$tag"
+          if [ "$multiple" = true ]
+          then
+            echo "Merging multiple architectures for tag $tag: $archs"
+            digest=$(docker buildx imagetools create \
+              --tag $name \
+              $(for d in $digests ; do echo $repository@$d ; done) \
+              2>&1 | sed -ne 's/.*pushing \(sha256:[a-f0-9]\+\).*/\1/p'
+            )
+            subject_checksums="${digest#sha256:}  $name
+        $subject_checksums"
+          else
+            echo "Single image for tag $tag"
+            digest=$(docker tag buildx imagetools create \
+              --tag $name \
+              $repository@$digests 2>&1 | sed -ne 's/.*pushing \(sha256:[a-f0-9]\+\).*/\1/p'
+            )
+            subject_checksums="${digest#sha256:}  $name
+$subject_checksums"
+          fi
+        done
+        ## TODO Migrate this below
+        # This must match the build job tag generation
+        echo "tag=$tag" >> $GITHUB_OUTPUT
         echo "name=$name" >> $GITHUB_OUTPUT
-        verify() {
-          gh attestation verify oci://$repository@$1 \
-            --repo $GITHUB_REPOSITORY \
-            --signer-workflow $GITHUB_WORKFLOW_REF \
-            --source-digest $GITHUB_SHA
-        }
         amd64_digest=$(docker buildx imagetools inspect "$name-amd64" --format '{{ print .Manifest.Digest }}')
         verify $amd64_digest
         arm64_digest=$(docker buildx imagetools inspect "$name-arm64" --format '{{ print .Manifest.Digest }}')
         verify $arm64_digest
-        docker buildx imagetools create \
-          --tag $name \
-          $repository@$amd64_digest \
-          $repository@$arm64_digest 2>&1 | tee $RUNNER_TEMP/create_output.txt
         # Would be too easy, if create output the digest to stdout directly
         digest=$(sed -ne 's/.*pushing \(sha256:[a-f0-9]\+\).*/\1/p' $RUNNER_TEMP/create_output.txt)
         echo "digest=$digest" >> $GITHUB_OUTPUT
