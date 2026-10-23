@@ -21,16 +21,18 @@ jobs:
     strategy:
       matrix:
         torch: ['2.3.1']
+        torch-wheel-tag: ['2.3.1']
+        torchvision: ['0.18.1']
         python: ['3.11.17', '3.11.17-slim']
-        index: [cu126,cpu]
+        index: [cu126]
         platform: [linux/amd64, linux/arm64]
-        exclude:
-        - index: cpu
-          platform: linux/arm64
-        - index: cpu
-          python: '3.11.17-slim'
+        include:
+        - torch: '2.3.1'
+          python: '3.11.17'
+          index: cpu
+          platform: linux/amd64
     permissions:
-      contents: read  # For the tag creation on cpu images
+      contents: read
     steps:
     - id: created
       run: echo "created=$(date --utc +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
@@ -41,7 +43,7 @@ jobs:
       uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
     - name: Log in to Docker Hub
-      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+      uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
       if: github.ref == 'refs/heads/main'
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -70,8 +72,6 @@ jobs:
 
     - name: Write the image digest for artifact
       id: write-image-digest
-      # Tags have limited set of valid character, '+' not included
-      # https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests
       run: |
         MATRIX="${{ matrix.torch }},${{ matrix.index || '' }},${{ matrix.python }},${PLATFORM#*/}"
         echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
@@ -95,92 +95,37 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write  # For the tag creation
-      id-token: write  # Needed for actions/attest-build-provenance build predicate
-      attestations: write  # Needed for actions/attest-build-provenance attestation upload to repository
-      artifact-metadata: write # Needed for actions/attest-build-provenance artifact metadata storage records
+      id-token: write  # Needed for actions/attest build predicate
+      attestations: write  # Needed for actions/attest attestation upload to repository
+      artifact-metadata: write  # Needed for actions/attest artifact metadata storage records
     steps:
-    - name: Download the image digest artifact
+    - uses: actions/checkout@v7
+
+    - name: Download the image digest artifacts
       uses: actions/download-artifact@v8
       with:
         pattern: image-digest-*
         merge-multiple: true
+
     - name: Login to Docker Hub
-      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+      uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Merge platform images using manifest tool
       id: manifest
+      shell: python
       run: |
-        repository="docker.io/$DOCKERHUB_USERNAME/python-torch"
-        echo "repository=$repository" >> $GITHUB_OUTPUT
-        subject_checksums=
-        for d in image-digest-*
-        do
-          matrix=${d#image-digest-}
-          echo "${matrix%,*}"
-        done | uniq |
-        while read image
-        do
-          archs=
-          multiple=false
-          digests=
-          for d in image-digest-$image,*
-          do
-            arch="${d##*,}"
-            if [ -n "$archs" ]
-            then
-              multiple=true
-              archs="$archs $arch"
-            else
-              archs="$arch"
-            fi
-            digests="$digests $(cat "$d")"
-          done
-          IFS=',' read torch index python <<< "$image"
-          tag="$(echo -n "${torch}${index:+-$index}-$python" | tr -c 'a-zA-Z0-9._-' '[-*]')"
-          name="$repository:$tag"
-          if [ "$multiple" = true ]
-          then
-            echo "Merging multiple architectures for tag $tag: $archs"
-            digest=$(docker buildx imagetools create \
-              --tag $name \
-              $(for d in $digests ; do echo $repository@$d ; done) \
-              2>&1 | sed -ne 's/.*pushing \(sha256:[a-f0-9]\+\).*/\1/p'
-            )
-            subject_checksums="${digest#sha256:}  $name
-        $subject_checksums"
-          else
-            echo "Single image for tag $tag"
-            digest=$(docker tag buildx imagetools create \
-              --tag $name \
-              $repository@$digests 2>&1 | sed -ne 's/.*pushing \(sha256:[a-f0-9]\+\).*/\1/p'
-            )
-            subject_checksums="${digest#sha256:}  $name
-$subject_checksums"
-          fi
-        done
-        ## TODO Migrate this below
-        # This must match the build job tag generation
-        echo "tag=$tag" >> $GITHUB_OUTPUT
-        echo "name=$name" >> $GITHUB_OUTPUT
-        amd64_digest=$(docker buildx imagetools inspect "$name-amd64" --format '{{ print .Manifest.Digest }}')
-        verify $amd64_digest
-        arm64_digest=$(docker buildx imagetools inspect "$name-arm64" --format '{{ print .Manifest.Digest }}')
-        verify $arm64_digest
-        # Would be too easy, if create output the digest to stdout directly
-        digest=$(sed -ne 's/.*pushing \(sha256:[a-f0-9]\+\).*/\1/p' $RUNNER_TEMP/create_output.txt)
-        echo "digest=$digest" >> $GITHUB_OUTPUT
+        import merge
+        merge.step()
       env:
         DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
-        GH_TOKEN: ${{ github.token }}
 
-    - name: Create attestation for the manifest
-      uses: actions/attest-build-provenance@v3
+    - name: Create attestation for the manifests
+      uses: actions/attest@v4
       with:
-        subject-name: ${{ steps.manifest.outputs.repository }}
-        subject-digest: ${{ steps.manifest.outputs.digest }}
+        subject-checksums: ${{ steps.manifest.outputs.sha256sum }}
         push-to-registry: true
 
     # With org.opencontainers.image.source pointing to this repository Dockerfile FROM updates in pull requests can be scanned
@@ -190,27 +135,31 @@ $subject_checksums"
     # https://octokit.github.io/rest.js/v19#git-update-ref
     - name: Tag the commit or update tag
       if: github.ref == 'refs/heads/main'
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       with:
         script: |
-          try {
-            await github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/${{ steps.manifest.outputs.tag }}',
-              sha: context.sha,
-            });
-          } catch(e) {
-            if (e.status === 422) {
-              await github.rest.git.updateRef({
+          for (const tag of JSON.parse(process.env.TAGS)) {
+            try {
+              await github.rest.git.createRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                ref: 'tags/${{ steps.manifest.outputs.tag }}',
+                ref: `refs/tags/${tag}`,
                 sha: context.sha,
-                force: true,
               });
+            } catch(e) {
+              if (e.status === 422) {
+                await github.rest.git.updateRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `tags/${tag}`,
+                  sha: context.sha,
+                  force: true,
+                });
+              }
             }
           }
+      env:
+        TAGS: ${{ steps.manifest.outputs.tags }}
 
   description:
     needs: merge
@@ -220,7 +169,7 @@ $subject_checksums"
     permissions:
       contents: read  # To checkout the README.md
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     # Can not use Personal Access Token to update the README. Returns FORBIDDEN.
     - name: Docker Hub Description
