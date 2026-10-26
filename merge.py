@@ -114,6 +114,8 @@ if __name__ == "__main__":
     # def create(name, digests):
     #     print(f"Creating image {name} with digests {digests}")
     #     return "sha256:dummy"
-
-    repository = "localhost:5000/b"
-    github(repository, sys.stdout)
+    if "GITHUB_OUTPUT" in os.environ:
+        step()
+    else:
+        repository = "localhost:5000/b"
+        github(repository, sys.stdout)
