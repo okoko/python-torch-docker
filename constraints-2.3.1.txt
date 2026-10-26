@@ -23,6 +23,5 @@ nvidia-nvtx-cu12==12.1.105
 pillow==13.0.0
 requests==2.34.2
 sympy==1.13.1
-triton==3.5.1
 typing-extensions==4.16.0
 urllib3==2.8.0
