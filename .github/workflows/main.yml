@@ -64,7 +64,7 @@ jobs:
           EXTRA_INDEX_URL=${{ matrix.extra-index-url || format('https://download.pytorch.org/whl/{0}/', matrix.index) }}
           CONSTRAINTS=constraints-${{ matrix.torch }}.txt
         outputs: |
-          type=image,dangling-name-prefix=${{ vars.DOCKERHUB_USERNAME }}/python-torch,push=true
+          type=image,push-by-digest=true,dangling-name-prefix=${{ vars.DOCKERHUB_USERNAME }}/python-torch
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
         cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }},mode=max
