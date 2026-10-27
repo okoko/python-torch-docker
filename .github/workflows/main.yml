@@ -22,7 +22,7 @@ env:
 
 jobs:
   build:
-    runs-on: ${{ case(matrix.platform == 'linux/arm64', 'ubuntu-24.04-arm', 'ubuntu-24.04') }}
+    runs-on: ${{ case(matrix.platform == 'arm64', 'ubuntu-24.04-arm', 'ubuntu-24.04') }}
     strategy:
       matrix:
         torch: ['2.3.1']
@@ -30,12 +30,12 @@ jobs:
         torchvision: ['0.18.1']
         python: ['3.11.18', '3.11.18-slim']
         index: [cu126]
-        platform: [linux/amd64, linux/arm64]
+        platform: [amd64, arm64]
         include:
         - torch: '2.3.1'
           python: '3.11.18'
           index: cpu
-          platform: linux/amd64
+          platform: amd64
     permissions:
       contents: read
     steps:
@@ -72,13 +72,13 @@ jobs:
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.index || '' }}-${{ matrix.python }}-${{ matrix.platform }}
         cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.index || '' }}-${{ matrix.python }}-${{ matrix.platform }},mode=max
-        platforms: ${{ matrix.platform }}
+        platforms: linux/${{ matrix.platform }}
 
     - name: Write the image digest for artifact
       id: write-image-digest
       run: |
-        tag="$(echo -n "${{ matrix.torch }}${{ case(matrix.index != null, format('-{0}', matrix.index), '') }}-${{ matrix.python }}${PLATFORM:+-}${PLATFORM#*/}" | tr -c 'a-zA-Z0-9._-' '[-*]')"
-        MATRIX="$tag+${PLATFORM#*/}"
+        tag="$(echo -n "${{ matrix.torch }}${{ case(matrix.index != null, format('-{0}', matrix.index), '') }}-${{ matrix.python }}${PLATFORM:+-}${PLATFORM}" | tr -c 'a-zA-Z0-9._-' '[-*]')"
+        MATRIX="$tag+${PLATFORM}"
         echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
         echo "Image digest for $MATRIX $DIGEST" >> $GITHUB_STEP_SUMMARY
         FILENAME=$RUNNER_TEMP/image-digest-$MATRIX.txt
