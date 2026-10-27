@@ -77,7 +77,7 @@ jobs:
     - name: Write the image digest for artifact
       id: write-image-digest
       run: |
-        tag="$(echo -n "${{ matrix.torch }}${{ case(matrix.index, format('-{0}', matrix.index), '') }}-${{ matrix.python }}${PLATFORM:+-}${PLATFORM#*/}" | tr -c 'a-zA-Z0-9._-' '[-*]')"
+        tag="$(echo -n "${{ matrix.torch }}${{ case(matrix.index != null, format('-{0}', matrix.index), '') }}-${{ matrix.python }}${PLATFORM:+-}${PLATFORM#*/}" | tr -c 'a-zA-Z0-9._-' '[-*]')"
         MATRIX="$tag+${PLATFORM#*/}"
         echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
         echo "Image digest for $MATRIX $DIGEST" >> $GITHUB_STEP_SUMMARY
