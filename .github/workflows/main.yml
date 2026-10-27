@@ -59,8 +59,8 @@ jobs:
           PYTHON=${{ matrix.python }}
           TORCH=${{ matrix.torch }}
           TORCH_REQUIREMENT=${{ matrix.url || format('torch=={0}', matrix.torch) }}
-          TORCH_WHEEL_SOURCE=${{ case(matrix.torch-wheel-tag != null, format('{0}/torch-wheels:{1}', vars.DOCKERHUB_USERNAME, matrix.torch-wheel-tag), 'scratch') }}
-          TORCHVISION_WHEEL_SOURCE=${{ case(matrix.torchvision != null, format('{0}/torchvision-wheels:{1}', vars.DOCKERHUB_USERNAME, matrix.torchvision), 'scratch') }}
+          TORCH_WHEEL_SOURCE=${{ case(matrix.torch-wheel-tag != null, format('{0}/torch-wheels:{1}', vars.DOCKERHUB_ACCOUNT, matrix.torch-wheel-tag), 'scratch') }}
+          TORCHVISION_WHEEL_SOURCE=${{ case(matrix.torchvision != null, format('{0}/torchvision-wheels:{1}', vars.DOCKERHUB_ACCOUNT, matrix.torchvision), 'scratch') }}
           EXTRA_INDEX_URL=${{ matrix.extra-index-url || case(matrix.index != null, format('https://download.pytorch.org/whl/{0}/', matrix.index), '' ) }}
           CONSTRAINTS=constraints-${{ matrix.torch }}.txt
         outputs: |
