@@ -1,7 +1,7 @@
 # This requires
-# vars.DOCKERHUB_USERNAME for the result image account
-# secrets.DOCKERHUB_USERNAME for the account that pushes the image
-# secrets.DOCKERHUB_TOKEN for the account password that pushes the image
+# vars.DOCKERHUB_ACCOUNT for the repository account
+# secrets.DOCKERHUB_USERNAME for the sign-in account
+# secrets.DOCKERHUB_TOKEN for the secrets.DOCKERHUB_USERNAME account personal access token
 
 name: Docker
 on:
@@ -64,7 +64,7 @@ jobs:
           EXTRA_INDEX_URL=${{ matrix.extra-index-url || case(matrix.index != null, format('https://download.pytorch.org/whl/{0}/', matrix.index), '' ) }}
           CONSTRAINTS=constraints-${{ matrix.torch }}.txt
         outputs: |
-          type=image,name=${{ vars.DOCKERHUB_USERNAME }}/python-torch,push-by-digest=true,push=true
+          type=image,name=${{ vars.DOCKERHUB_ACCOUNT }}/python-torch,push-by-digest=true,push=true
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
         cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }},mode=max
@@ -117,7 +117,7 @@ jobs:
       id: manifest
       run: python3 merge.py
       env:
-        DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+        DOCKERHUB_ACCOUNT: ${{ vars.DOCKERHUB_ACCOUNT }}
 
     - name: Create attestation for the manifests
       uses: actions/attest@v4
@@ -174,4 +174,4 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-        repository: ${{ vars.DOCKERHUB_USERNAME }}/python-torch
+        repository: ${{ vars.DOCKERHUB_ACCOUNT }}/python-torch
