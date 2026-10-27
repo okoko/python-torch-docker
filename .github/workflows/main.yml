@@ -70,8 +70,8 @@ jobs:
         outputs: |
           type=image,name=${{ env.REPOSITORY }},push-by-digest=true,push=true
         # https://docs.docker.com/build/ci/github-actions/cache/
-        cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
-        cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }},mode=max
+        cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.index || '' }}-${{ matrix.python }}-${{ matrix.platform }}
+        cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.index || '' }}-${{ matrix.python }}-${{ matrix.platform }},mode=max
         platforms: ${{ matrix.platform }}
 
     - name: Write the image digest for artifact
