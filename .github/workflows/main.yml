@@ -166,7 +166,6 @@ jobs:
     needs: merge
     # https://github.com/actions/runner-images/blob/main/images/ubuntu-slim/ubuntu-slim-Readme.md
     runs-on: ubuntu-slim
-    if: github.ref == 'refs/heads/main'
     permissions:
       contents: read  # To checkout the README.md
     steps:
