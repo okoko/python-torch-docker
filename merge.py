@@ -104,8 +104,10 @@ def github(repository, github_output: TextIO):
 
 
 def step():
-    DOCKERHUB_ACCOUNT = os.environ.get("DOCKERHUB_ACCOUNT", "okoko")
-    repository = f"docker.io/{DOCKERHUB_ACCOUNT}/python-torch"
+    repository = os.environ.get("REPOSITORY")
+    if repository is None:
+        DOCKERHUB_ACCOUNT = os.environ.get("DOCKERHUB_ACCOUNT", "okoko")
+        repository = f"docker.io/{DOCKERHUB_ACCOUNT}/python-torch"
     with open(os.environ["GITHUB_OUTPUT"], "a") as f:
         github(repository, f)
 
