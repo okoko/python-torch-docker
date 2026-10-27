@@ -128,7 +128,8 @@ jobs:
       uses: actions/attest@v4
       with:
         subject-checksums: ${{ steps.manifest.outputs.sha256sum }}
-        push-to-registry: true
+        # Does not work for multiple subjects in v4.2.2
+        # push-to-registry: true
 
     # With org.opencontainers.image.source pointing to this repository Dockerfile FROM updates in pull requests can be scanned
     # if the commits have matching tags with the image.
