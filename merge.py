@@ -1,9 +1,8 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 
 import glob
 import json
 import os
-import re
 import subprocess
 import sys
 import tempfile
@@ -40,20 +39,13 @@ class Artifact:
     def __init__(self, path: str):
         self.path = path
         matrix = path.removeprefix("image-digest-")
-        self.torch, self.index, self.python, self.arch = matrix.split(",")
+        self.tag, self.arch = matrix.split("+")
         with open(path) as f:
             self.digest = f.read().strip()
 
     @property
-    def image(self):
-        return f"{self.torch},{self.index},{self.python}"
-
-    @property
-    def tag(self):
-        tag = f"{self.torch}{f'-{self.index}' if self.index else ''}-{self.python}"
-        # Tags have limited set of valid character, '+' not included
-        # https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests
-        return re.sub(r"[^a-zA-Z0-9._-]+", "_", tag)
+    def __repr__(self):
+        return f"<Artifact {self.tag},{self.arch}>"
 
 
 def read_artifacts():
@@ -77,7 +69,7 @@ def merge(images):
         if len(digests) > 1:
             print(f"Merging multiple architectures for tag {name}: {' '.join(digests)}")
         else:
-            print(f"Single image for tag {name} {digests[0]}")
+            print(f"Single image for tag {name}: {digests[0]}")
         digest = create(name, digests)
         yield name, digest
 
