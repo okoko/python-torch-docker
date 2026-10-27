@@ -17,6 +17,9 @@ on:
     - cron: '42 3 2 * *'
   workflow_dispatch:
 
+env:
+  REPOSITORY: ${{ vars.DOCKERHUB_ACCOUNT }}/python-torch${{ case(github.ref == 'refs/heads/main', '', '-dev') }}
+
 jobs:
   build:
     runs-on: ${{ case(matrix.platform == 'linux/arm64', 'ubuntu-24.04-arm', 'ubuntu-24.04') }}
@@ -46,7 +49,6 @@ jobs:
 
     - name: Log in to Docker Hub
       uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
-      if: github.ref == 'refs/heads/main'
       with:
         username: ${{ vars.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -66,7 +68,7 @@ jobs:
           EXTRA_INDEX_URL=${{ matrix.extra-index-url || case(matrix.index != null, format('https://download.pytorch.org/whl/{0}/', matrix.index), '' ) }}
           CONSTRAINTS=constraints-${{ matrix.torch }}.txt
         outputs: |
-          type=image,name=${{ vars.DOCKERHUB_ACCOUNT }}/python-torch,push-by-digest=true,push=true
+          type=image,name=${{ env.REPOSITORY }},push-by-digest=true,push=true
         # https://docs.docker.com/build/ci/github-actions/cache/
         cache-from: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }}
         cache-to: type=gha,scope=${{ matrix.torch }}-${{ matrix.python }},mode=max
@@ -176,4 +178,4 @@ jobs:
       with:
         username: ${{ vars.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-        repository: ${{ vars.DOCKERHUB_ACCOUNT }}/python-torch
+        repository: ${{ env.REPOSITORY }}
