@@ -77,7 +77,7 @@ jobs:
     - name: Write the image digest for artifact
       id: write-image-digest
       run: |
-        tag="$TORCH-${INDEX:+-$INDEX}-${PYTHON}"
+        tag="$TORCH${INDEX:+-$INDEX}-${PYTHON}"
         MATRIX="$tag+${PLATFORM}"
         echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
         echo "Image digest for \`$tag\`${PLATFORM:+ ($PLATFORM)}: \`$DIGEST\`" >> $GITHUB_STEP_SUMMARY
