@@ -140,28 +140,31 @@ jobs:
     # https://octokit.github.io/rest.js/v19#git-create-ref
     # https://octokit.github.io/rest.js/v19#git-update-ref
     - name: Tag the commit or update tag
-      if: github.ref == 'refs/heads/main'
       uses: actions/github-script@v9
       with:
         script: |
-          for (const tag of JSON.parse(process.env.TAGS)) {
-            try {
-              await github.rest.git.createRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: `refs/tags/${tag}`,
-                sha: context.sha,
-              });
-            } catch(e) {
-              if (e.status === 422) {
-                await github.rest.git.updateRef({
+          for (const tag of JSON.parse(process.env.TAGS || '[]')) {
+            if (process.env.GITHUB_REF == 'refs/heads/main') {
+              try {
+                await github.rest.git.createRef({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  ref: `tags/${tag}`,
+                  ref: `refs/tags/${tag}`,
                   sha: context.sha,
-                  force: true,
                 });
+              } catch(e) {
+                if (e.status === 422) {
+                  await github.rest.git.updateRef({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    ref: `tags/${tag}`,
+                    sha: context.sha,
+                    force: true,
+                  });
+                }
               }
+            } else {
+              console.log(`Skipping ${context.repo.owner}/${context.repo.repo} tag ${tag} of commit ${context.sha} as not on main branch`);
             }
           }
       env:
