@@ -77,16 +77,19 @@ jobs:
     - name: Write the image digest for artifact
       id: write-image-digest
       run: |
-        tag="$(echo -n "${{ matrix.torch }}${{ case(matrix.index != null, format('-{0}', matrix.index), '') }}-${{ matrix.python }}${PLATFORM:+-}${PLATFORM}" | tr -c 'a-zA-Z0-9._-' '[-*]')"
+        tag="$TORCH-${INDEX:+-$INDEX}-${PYTHON}"
         MATRIX="$tag+${PLATFORM}"
         echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
-        echo "Image digest for $MATRIX $DIGEST" >> $GITHUB_STEP_SUMMARY
+        echo "Image digest for \`$tag\`${PLATFORM:+ ($PLATFORM)}: \`$DIGEST\`" >> $GITHUB_STEP_SUMMARY
         FILENAME=$RUNNER_TEMP/image-digest-$MATRIX.txt
-        echo "$DIGEST" >> $FILENAME
+        echo "$DIGEST" > $FILENAME
         echo "filename=$FILENAME" >> $GITHUB_OUTPUT
       env:
         DIGEST: ${{ steps.build-push.outputs.digest }}
-        PLATFORM: ${{ case(matrix.index != 'cpu', matrix.platform, '') }}
+        TORCH: ${{ matrix.torch }}
+        INDEX: ${{ matrix.index }}
+        PYTHON: ${{ matrix.python }}
+        PLATFORM: ${{ matrix.platform }}
 
     - name: Save the image digest as artifact
       uses: actions/upload-artifact@v7
