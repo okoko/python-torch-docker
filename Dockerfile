@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ARG PYTHON=3.11.18
+ARG OS=bookworm
 ARG TORCH=2.3.1
 ARG TORCH_REQUIREMENT="torch==${TORCH}"
 ARG EXTRA_INDEX_URL="https://download.pytorch.org/whl/cu126/"
@@ -15,11 +16,12 @@ FROM ${TORCH_WHEEL_SOURCE} AS torch-wheel-image
 FROM ${TORCHVISION_WHEEL_SOURCE} AS torchvision-wheel-image
 
 
-FROM python:${PYTHON}
+FROM python:${PYTHON}-${OS}
 
+ARG OS
 ARG TARGETPLATFORM
-RUN --mount=type=cache,target=/var/cache/apt,id=bookworm-/var/cache/apt-${TARGETPLATFORM} \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=bookworm-/var/lib/apt-${TARGETPLATFORM} \
+RUN --mount=type=cache,target=/var/cache/apt,id=${OS}-/var/cache/apt-${TARGETPLATFORM} \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=${OS}-/var/lib/apt-${TARGETPLATFORM} \
     <<NUR
     set -ex
 # To keep cache of downloaded .debs, replace docker configuration
